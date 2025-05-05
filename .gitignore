@@ -1,2 +1,4 @@
 llm_venv/
 .env
+core/__pycache__/
+service/__pycache__/

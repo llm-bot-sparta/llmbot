@@ -1,12 +1,14 @@
 import sys
 import os
 import pandas as pd
-import streamlit as st
-import re
-
 # 경로 추가 (모듈 import용)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.grader import grade_single_question
+
+import streamlit as st
+import re
+
+
 
 st.set_page_config(page_title="Gemini 자동 채점기", layout="wide")
 st.title("🔥 과제 자동 채점기")

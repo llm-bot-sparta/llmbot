@@ -6,6 +6,10 @@
 - Python 3.12.3
 
 ---
+## 세팅 방법
+- `pip install -r requirements.txt`
+- `pip install --upgrade google-api-python-client`  # google 모듈 업그레이드가 필요한 경우가 있음
+
 
 ## 🗂️ 폴더별 설명
 

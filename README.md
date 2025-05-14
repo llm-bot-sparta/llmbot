@@ -12,7 +12,7 @@
 
 ## 실행 방법
 - 가상환경 진입
-- main.py 실행
+- main.py 실행 `streamlit run streamlit_app/main.py`
 
 ## Docker 배포 방법
 

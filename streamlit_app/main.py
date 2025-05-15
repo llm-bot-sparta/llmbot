@@ -7,73 +7,108 @@ from core.grader import grade_single_question
 
 import streamlit as st
 import re
+from datetime import datetime
+from questions import QUESTIONS
 
-
-
-st.set_page_config(page_title="Gemini 자동 채점기", layout="wide")
-st.title("🔥 과제 자동 채점기")
-
-# ✅ 과제명 / 학생명 입력
-assignment_title = st.text_input("📘 과제명")
-student_name = st.text_input("👤 학생 이름")
-
-# ✅ 문항 개수
-st.markdown("### 📚 문항 추가하기")
-num_questions = st.number_input("문항 개수", min_value=1, max_value=10, value=1)
-
-questions = []
-results = []
-
-# ✅ 문항 입력
-for i in range(num_questions):
-    st.markdown(f"---\n### 문항 {i+1}")
-    question = st.text_area(f"문제 {i+1}", key=f"question_{i}")
-    model_answer = st.text_area(f"모범 답안 {i+1}", key=f"model_answer_{i}")
-    student_answer = st.text_area(f"학생 답안 {i+1}", key=f"student_answer_{i}")
-    questions.append({
-        "question": question,
-        "model_answer": model_answer,
-        "student_answer": student_answer
-    })
-
-# ✅ 채점 버튼
-if st.button("📝 채점 시작하기"):
-    if not assignment_title or not student_name:
-        st.warning("⚠️ 과제명과 학생명을 모두 입력해주세요.")
-    else:
-        for idx, q in enumerate(questions):
-            with st.spinner(f"문항 {idx+1} 채점 중..."):
-                try:
-                    result_text = grade_single_question(q['question'], q['model_answer'], q['student_answer'], idx)
-                    st.markdown(f"### ✅ 문항 {idx+1} 채점 결과")
-                    st.success(result_text)
-
-                    # 결과 파싱
-                    match_understanding = re.search(r"\[이해도 평가\]\s*(상|중|하)", result_text)
-                    match_feedback = re.search(r"\[피드백\](.*)", result_text, re.DOTALL)
-
-                    understanding = match_understanding.group(1) if match_understanding else "정보 없음"
-                    feedback = match_feedback.group(1).strip() if match_feedback else "피드백 없음"
-
-                    results.append({
-                        "과제명": assignment_title,
-                        "학생명": student_name,
-                        "문항 번호": f"문항 {idx+1}",
-                        "이해도 평가": understanding,
-                        "피드백": feedback
-                    })
-
-                except Exception as e:
-                    st.error(f"문항 {idx+1} 채점 실패: {e}")
-
-# ✅ CSV 다운로드
-if results:
+def save_feedback_to_csv(assignment_type, student_name, results):
+    """
+    모든 문제의 피드백을 하나의 CSV 파일로 저장하는 함수
+    
+    Args:
+        assignment_type (str): 과제 카테고리 (예: SQL, Python기초)
+        student_name (str): 학생 이름
+        results (list): 각 문제별 결과를 담은 리스트
+    """
+    # 피드백 저장 디렉토리 생성
+    os.makedirs('data/feedback', exist_ok=True)
+    
+    # CSV 파일명 생성 (과제카테고리_학생명_날짜.csv)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    csv_filename = f'data/feedback/{assignment_type}_{student_name}_{timestamp}.csv'
+    
+    # DataFrame 생성 및 CSV 저장
     df = pd.DataFrame(results)
-    csv = df.to_csv(index=False, encoding='utf-8-sig')
-    st.markdown("---")
-    st.download_button(
-        label="📥 채점 결과 CSV 다운로드",
-        data=csv,
-        file_name=f"{assignment_title}_{student_name}_grading_results.csv",
-        mime="text/csv"
-    )
+    df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
+    
+    return csv_filename
+
+def main():
+    st.title("🔥 과제 자동 채점기")
+    
+    # 사이드바: 과제 선택, 학생명 직접 입력
+    with st.sidebar:
+        assignment_type = st.selectbox("과제 선택", list(QUESTIONS.keys()), index=0)
+        student_name = st.text_input("학생 이름을 입력하세요")
+    
+    # 메인 화면: 카테고리별 전체 문제 한 번에 표시
+    if assignment_type:
+        if len(QUESTIONS[assignment_type]) == 0:
+            st.info(f"'{assignment_type}' 카테고리에는 아직 등록된 문제가 없습니다.")
+        else:
+            st.header(f"[{assignment_type}] 전체 문항 답안 입력 및 채점")
+            answer_inputs = {}
+            for qid, q in QUESTIONS[assignment_type].items():
+                st.markdown(f"---\n#### {qid}. {q['title']}")
+                st.markdown(q['content'])
+                answer_inputs[qid] = st.text_area(f"학생 답변 입력 ({qid})", key=f"answer_{qid}", height=120)
+                with st.expander(f"평가 기준 보기 ({qid})"):
+                    for criteria in q["evaluation_criteria"]:
+                        st.write(f"**{criteria['description']}** (가중치: {criteria['weight']})")
+                        for check_point in criteria["check_points"]:
+                            st.write(f"- {check_point}")
+            
+            # 채점 버튼
+            if st.button("전체 문항 채점하기"):
+                if not student_name:
+                    st.warning("학생 이름을 입력해야 채점할 수 있습니다.")
+                    return
+                
+                st.subheader("채점 결과")
+                results = []  # 모든 문제의 결과를 저장할 리스트
+                
+                for qid, q in QUESTIONS[assignment_type].items():
+                    answer = answer_inputs[qid]
+                    # Gemini LLM을 통한 평가
+                    feedback = grade_single_question(
+                        assignment_type,
+                        q['content'],
+                        q['model_answer'],
+                        answer,
+                        q['evaluation_criteria']
+                    )
+                    
+                    st.markdown(f"**{qid}. {q['title']}**")
+                    if isinstance(feedback, dict):
+                        st.write(f"**점수:** {feedback.get('score', 'N/A')}")
+                        st.write(f"**피드백:** {feedback.get('feedback', '')}")
+                        
+                        # 결과 저장
+                        results.append({
+                            '과제카테고리': assignment_type,
+                            '학생명': student_name,
+                            '질문번호': qid,
+                            '질문제목': q['title'],
+                            '학생답안': answer,
+                            '점수': feedback.get('score', 'N/A'),
+                            '피드백': feedback.get('feedback', ''),
+                            '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                        })
+                    else:
+                        st.write(feedback)
+                
+                # 모든 결과를 하나의 CSV 파일로 저장
+                if results:
+                    csv_filename = save_feedback_to_csv(assignment_type, student_name, results)
+                    st.success(f"모든 평가 결과가 저장되었습니다! (파일: {csv_filename})")
+                    
+                    # CSV 파일 다운로드 버튼
+                    with open(csv_filename, 'rb') as f:
+                        st.download_button(
+                            label="📥 CSV 파일 다운로드",
+                            data=f,
+                            file_name=os.path.basename(csv_filename),
+                            mime="text/csv"
+                        )
+
+if __name__ == "__main__":
+    main()

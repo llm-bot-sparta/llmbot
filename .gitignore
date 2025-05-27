@@ -6,3 +6,4 @@ streamlit_app/__pycache__
 /llmbot
 credentials/sparatallm-35af38b881af.json
 credentials/sparatallm-77020e47659e.json
+/data/feedback

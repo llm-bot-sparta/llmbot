@@ -4,7 +4,7 @@ import pandas as pd
 # 경로 추가 (모듈 import용)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from core.grader import grade_single_question
-from core.mysql_engine import setup_database, check_query_result, mysql_engine
+from service.mysql_engine import setup_database, check_query_result, mysql_engine
 from sqlalchemy import text
 
 import streamlit as st
@@ -121,14 +121,14 @@ def main():
                             })
                         else:
                             try:
+                                # check_query_result 함수를 사용하여 쿼리 결과 검증
+                                is_correct = check_query_result([query])
+                                # 결과를 표시하기 위해 쿼리 실행
                                 with mysql_engine.connect() as conn:
                                     result_df = pd.read_sql_query(text(query), conn)
-                                answer_file = os.path.join('answer', f'sql_q{qid}.csv')
+                                answer_file = os.path.join('answer/5th_sql_olist/', f'sql_q{qid}.csv')
                                 if os.path.exists(answer_file):
                                     answer_df = pd.read_csv(answer_file)
-                                    result_sorted = result_df.sort_values(by=result_df.columns.tolist()).reset_index(drop=True)
-                                    answer_sorted = answer_df.sort_values(by=answer_df.columns.tolist()).reset_index(drop=True)
-                                    is_correct = result_sorted.equals(answer_sorted)
                                     
                                     # Gemini LLM을 통한 평가
                                     feedback = grade_single_question(

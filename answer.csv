@@ -1,0 +1,5 @@
+payment_type,total_payment_value,payment_percentage
+boleto,23547.38,16.17
+credit_card,115035.82,79.01
+debit_card,2698.36,1.85
+voucher,4308.27,2.96

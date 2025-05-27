@@ -57,7 +57,7 @@
 |------|------|
 | `__init__py` | 처음 실행되는 스크립트로, 디렉토리 안의 코드가 실행되는 작업디렉토리를 루트로 설정 |
 | `grader.py` | 과제 채점 로직 |
-| `mysql_engine.py` | mysql 연결하고 채점하는 스크립트, 추후 main.py가 참조하여 사용 |
+
 | `prompt_builder.py` | 프롬프트 생성 유틸 (프롬프트 변경시 수정) |
 
 ---
@@ -68,6 +68,7 @@
 |------|------|
 | `llm_client.py` | LLM API 호출 래퍼 (Gemini/OpenAI) |
 | `config.py` | 환경 변수 로딩 |
+| `mysql_engine.py` | mysql 연결하고 채점하는 스크립트, 추후 main.py가 참조하여 사용 |
 
 ---
 

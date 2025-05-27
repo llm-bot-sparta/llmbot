@@ -1,4 +1,4 @@
-"payment_type","total_payment_value","payment_percentage"
+payment_type,total_payment_value,payment_percentage
 credit_card,115035.81999999995,79.01
 boleto,23547.379999999994,16.17
 voucher,4308.2699999999995,2.96

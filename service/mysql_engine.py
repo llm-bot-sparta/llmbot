@@ -63,9 +63,9 @@ def setup_database():
 
     try:
         # CSV 파일 읽기
-        customers_df = pd.read_csv('answer/customers.csv')
-        orders_df = pd.read_csv('answer/orders.csv')
-        payments_df = pd.read_csv('answer/payments.csv')
+        customers_df = pd.read_csv('answer/5th_sql_olist/customers.csv')
+        orders_df = pd.read_csv('answer/5th_sql_olist/orders.csv')
+        payments_df = pd.read_csv('answer/5th_sql_olist/payments.csv')
 
         with mysql_engine.connect() as conn:
             # 테이블 삭제
@@ -89,23 +89,24 @@ def setup_database():
         return True
         
     except Exception as e:
+        print(os.getcwd())
         print(f"데이터베이스 설정 중 에러가 발생했습니다: {str(e)}")
         return False
-
-def check_query_result(queries: list) -> None:
+def check_query_result(queries: list) -> bool:
     """
     학생의 쿼리들을 실행하고 정답과 비교하는 함수
     
     Args:
         queries (list): 학생이 작성한 SQL 쿼리 리스트 (6개)
+    Returns:
+        bool: 모든 쿼리가 정상적으로 실행되었는지 여부
     """
-    results = []
-    
-    for i, query in enumerate(queries, 1):
-        try:
+    try:
+        results = []
+        
+        for i, query in enumerate(queries, 1):
             # 쿼리가 비어있거나 None인 경우 처리
             if not query or query.strip() == "":
-                print(f"문제 {i}의 쿼리가 비어있습니다.")
                 results.append((i, False, None, None))
                 continue
                 
@@ -114,15 +115,14 @@ def check_query_result(queries: list) -> None:
                 result_df = pd.read_sql_query(text(query), conn)
             
             # 정답 파일 읽기
-            answer_file = os.path.join('answer', f'sql_q{i}.csv')
+            answer_file = os.path.join('answer/5th_sql_olist/', f'sql_q{i}.csv')
             if not os.path.exists(answer_file):
-                print(f"정답 파일을 찾을 수 없습니다: {answer_file}")
                 results.append((i, False, None, None))
                 continue
                 
             answer_df = pd.read_csv(answer_file)
             
-            # 데이터프레임 비교
+            # 데이터프레임 비교를 위해 정렬
             result_sorted = result_df.sort_values(by=result_df.columns.tolist()).reset_index(drop=True)
             answer_sorted = answer_df.sort_values(by=answer_df.columns.tolist()).reset_index(drop=True)
             
@@ -130,18 +130,12 @@ def check_query_result(queries: list) -> None:
             is_correct = result_sorted.equals(answer_sorted)
             results.append((i, is_correct, result_df, answer_df))
             
-        except Exception as e:
-            print(f"문제 {i} 실행 중 에러 발생: {str(e)}")
-            results.append((i, False, None, None))
-    
-    # 결과 출력
-    print("\n=== 채점 결과 ===")
-    for i, is_correct, result_df, answer_df in results:
-        print(f"문제{i}: {'O' if is_correct else 'X'}")
+        # 모든 쿼리가 정상 실행되었으므로 True 반환
+        return True
         
-        if result_df is not None and answer_df is not None:
-            print(f"\n문제{i} - 학생 쿼리 결과:")
-            print(result_df)
-            print(f"\n문제{i} - 정답:")
-            print(answer_df)
-            print("\n" + "="*50 + "\n")
+    except Exception as e:
+        # 에러 발생 시 해당 쿼리는 실패 처리하고 False 반환
+        results.append((i, False, None, None))
+        return False
+
+        

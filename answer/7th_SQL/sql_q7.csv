@@ -1,0 +1,5 @@
+Age_Group,Total_Customers,Attrition_Rate
+"20s or less",195,0.087
+"30s",1841,0.142
+"40s",4561,0.169
+"50s or more",3530,0.163

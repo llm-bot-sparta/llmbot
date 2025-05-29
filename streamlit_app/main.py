@@ -11,6 +11,14 @@ import streamlit as st
 import re
 from datetime import datetime
 from questions import QUESTIONS
+import importlib  # 동적 import를 위해 추가
+
+def get_grading_scheme(assignment_type):
+    if assignment_type == "SQL":
+        module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
+        return module.GRADING_SCHEME
+    # 추후 다른 과제 유형 추가 가능
+    return []
 
 def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     """
@@ -36,11 +44,20 @@ def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     
     return csv_filename
 
+def round_to_dir(round_str):
+    if round_str == '7회차':
+        return '7th_sql_BankChurners'
+    else :
+        ValueError(f"지원하지 않는 회차입니다: {round_str}")
+    return round_str
+
 def main():
     st.title("🔥 과제 자동 채점기")
     
-    # 사이드바: 과제 선택, 학생명 직접 입력
+    # 사이드바: 회차 선택, 과제 선택, 학생명 직접 입력
     with st.sidebar:
+        round_options = ['7th']  # 필요시 확장
+        selected_round = st.selectbox("과제 회차 선택", round_options, index=0)
         assignment_type = st.selectbox("과제 선택", list(QUESTIONS.keys()), index=0)
         student_name = st.text_input("학생 이름을 입력하세요")
         
@@ -66,10 +83,14 @@ def main():
                 st.markdown(q['content'])
                 answer_inputs[qid] = st.text_area(f"학생 답변 입력 ({qid})", key=f"answer_{qid}", height=120)
                 with st.expander(f"평가 기준 보기 ({qid})"):
+                    st.markdown("**문제별 요구 체크리스트**")
                     for criteria in q["evaluation_criteria"]:
-                        st.write(f"**{criteria['description']}** (가중치: {criteria['weight']})")
-                        for check_point in criteria["check_points"]:
-                            st.write(f"- {check_point}")
+                        st.write(f"- {criteria['description']}")
+                    grading_scheme = get_grading_scheme(assignment_type)
+                    if grading_scheme:
+                        st.markdown("**공통 채점 기준 (총 100점)**")
+                        for scheme in grading_scheme:
+                            st.write(f"- {scheme['name']} ({scheme['score']}점): {scheme['description']}")
             
             # 채점 버튼
             if st.button("전체 문항 채점하기"):
@@ -86,8 +107,11 @@ def main():
                 
                 # SQL 과제인 경우 MySQL 엔진을 통한 채점
                 if assignment_type == "SQL":
+                    # answer_dir을 회차+과제유형 조합으로 생성
+                    answer_dir = f"answer/{selected_round}_{assignment_type}/"
+                    print(answer_dir)
                     # 데이터베이스 설정
-                    if not setup_database():
+                    if not setup_database(answer_dir):
                         st.error("데이터베이스 설정에 실패했습니다.")
                         return
                     
@@ -98,13 +122,13 @@ def main():
                         student_queries.append(query)
                     
                     # 쿼리 실행 및 결과 확인
-                    check_query_result(student_queries)
+                    check_query_result(student_queries, answer_dir)
                     
                     # 결과 표시
                     st.markdown("### SQL 쿼리 채점 결과")
-                    for qid, query in enumerate(student_queries, 1):
-                        question_key = f'SQL_{qid:03d}'
-                        q = QUESTIONS[assignment_type][question_key]
+                    for qid in sorted(answer_inputs.keys()):
+                        query = answer_inputs[qid].strip()
+                        q = QUESTIONS[assignment_type][qid]
                         
                         if not query:
                             st.markdown(f"**{qid}. {q['title']}**: ❌ (답변 없음)")
@@ -122,11 +146,11 @@ def main():
                         else:
                             try:
                                 # check_query_result 함수를 사용하여 쿼리 결과 검증
-                                is_correct = check_query_result([query])
+                                is_correct = check_query_result([query], answer_dir)
                                 # 결과를 표시하기 위해 쿼리 실행
                                 with mysql_engine.connect() as conn:
                                     result_df = pd.read_sql_query(text(query), conn)
-                                answer_file = os.path.join('answer/5th_sql_olist/', f'sql_q{qid}.csv')
+                                answer_file = os.path.join(answer_dir, f'sql_q{qid}.csv')
                                 if os.path.exists(answer_file):
                                     answer_df = pd.read_csv(answer_file)
                                     

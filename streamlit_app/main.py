@@ -16,7 +16,7 @@ import importlib  # 동적 import를 위해 추가
 def get_grading_scheme(assignment_type):
     if assignment_type == "SQL":
         module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
-        return module.GRADING_SCHEME
+        return getattr(module, "GRADING_SCHEME", [])
     # 추후 다른 과제 유형 추가 가능
     return []
 
@@ -110,26 +110,40 @@ def main():
                     # answer_dir을 회차+과제유형 조합으로 생성
                     answer_dir = f"answer/{selected_round}_{assignment_type}/"
                     print(answer_dir)
-                    # 데이터베이스 설정
+                    
+                    # 데이터베이스 초기화
                     if not setup_database(answer_dir):
-                        st.error("데이터베이스 설정에 실패했습니다.")
+                        st.error("데이터베이스 초기화에 실패했습니다.")
+                        return
+                    
+                    # 데이터베이스 연결 확인
+                    try:
+                        with mysql_engine.connect() as conn:
+                            conn.execute(text("SELECT 1"))
+                    except Exception as e:
+                        st.error("데이터베이스 연결에 실패했습니다.")
                         return
                     
                     # 학생 답변 수집
-                    student_queries = []
-                    for qid in sorted(answer_inputs.keys()):
-                        query = answer_inputs[qid].strip()
-                        student_queries.append(query)
-                    
-                    # 쿼리 실행 및 결과 확인
-                    check_query_result(student_queries, answer_dir)
-                    
+                    student_queries = [answer_inputs[qid].strip().replace('BankChurners', 'bankchurners') for qid in sorted(answer_inputs.keys())]
+                    # 전체 쿼리 한 번에 채점
+                    check_results = check_query_result(student_queries, answer_dir)
+                    # 디버깅용 출력 추가
+                    print('check_results:', check_results)
+                    print('각 튜플 길이:', [len(x) for x in check_results])
+                    print('answer_inputs.keys:', list(answer_inputs.keys()))
+                    print('student_queries:', student_queries)
                     # 결과 표시
                     st.markdown("### SQL 쿼리 채점 결과")
-                    for qid in sorted(answer_inputs.keys()):
+                    grading_scheme = get_grading_scheme(assignment_type)
+                    for idx, qid in enumerate(sorted(answer_inputs.keys())):
                         query = answer_inputs[qid].strip()
                         q = QUESTIONS[assignment_type][qid]
-                        
+                        # check_query_result의 반환값이 리스트라고 가정 (question_id, is_correct, result_df, answer_df, status, error_message)
+                        if check_results and idx < len(check_results):
+                            question_id, is_correct, result_df, answer_df, status, error_message = check_results[idx]
+                        else:
+                            question_id, is_correct, result_df, answer_df, status, error_message = None, False, None, None, 'mismatch', None
                         if not query:
                             st.markdown(f"**{qid}. {q['title']}**: ❌ (답변 없음)")
                             results.append({
@@ -145,66 +159,74 @@ def main():
                             })
                         else:
                             try:
-                                # check_query_result 함수를 사용하여 쿼리 결과 검증
-                                is_correct = check_query_result([query], answer_dir)
-                                # 결과를 표시하기 위해 쿼리 실행
-                                with mysql_engine.connect() as conn:
-                                    result_df = pd.read_sql_query(text(query), conn)
-                                answer_file = os.path.join(answer_dir, f'sql_q{qid}.csv')
-                                if os.path.exists(answer_file):
-                                    answer_df = pd.read_csv(answer_file)
-                                    
-                                    # Gemini LLM을 통한 평가
+                                st.markdown(f"**{qid}. {q['title']}**")
+                                # 상태에 따른 아이콘과 메시지 표시
+                                status_icon = {
+                                    'exact_match': '⭕',
+                                    'close_match': '❗️',
+                                    'exact_match_colname_warning': '⭕',
+                                    'close_match_colname_warning': '❗️',
+                                    'mismatch': '❌',
+                                    'empty': '❌',
+                                    'no_answer': '❌',
+                                    'error': '❌'
+                                }
+                                status_message = {
+                                    'exact_match': '정답',
+                                    'close_match': '확인 필요 (근사치 일치)',
+                                    'exact_match_colname_warning': '정답 (컬럼명 다름)',
+                                    'close_match_colname_warning': '확인 필요 (컬럼명 다름, 값은 근사치 일치)',
+                                    'mismatch': '오답',
+                                    'empty': '답변 없음',
+                                    'no_answer': '정답 파일 없음',
+                                    'error': '에러 발생'
+                                }
+                                status = check_results[idx][4] if check_results and idx < len(check_results) else 'mismatch'
+                                st.markdown(f"**SQL 채점 결과**: {status_icon[status]} ({status_message[status]})")
+                                if result_df is not None:
+                                    st.markdown("**학생 쿼리 결과**")
+                                    st.dataframe(result_df)
+                                if answer_df is not None:
+                                    st.markdown("**정답**")
+                                    st.dataframe(answer_df)
+                                # 쿼리 실행 결과에 따른 피드백 분기
+                                if status in ['error', 'empty', 'no_answer']:
+                                    # LLM 호출 없이 오류 메시지만 피드백으로 사용
+                                    score = 0
+                                    fb_text = f"[SQL 오류]\n{error_message if error_message else '쿼리 실행에 실패했습니다.'}"
+                                else:
+                                    # 정상 실행 시 LLM 호출
                                     feedback = grade_single_question(
                                         assignment_type,
                                         q['content'],
                                         q['model_answer'],
                                         query,
-                                        q['evaluation_criteria']
+                                        q['evaluation_criteria'],
+                                        query_status=status
                                     )
-                                    
-                                    st.markdown(f"**{qid}. {q['title']}**")
-                                    # SQL 엔진 채점 결과 표시
-                                    st.markdown(f"**SQL 채점 결과**: {'⭕' if is_correct else '❌'}")
-                                    
-                                    # 학생 쿼리 결과와 정답을 세로로 표시
-                                    st.markdown("**학생 쿼리 결과**")
-                                    st.dataframe(result_df)
-                                    
-                                    st.markdown("**정답**")
-                                    st.dataframe(answer_df)
-                                    
-                                    # LLM 평가 결과 표시
-                                    if isinstance(feedback, dict):
-                                        st.write(f"**점수:** {feedback.get('score', 'N/A')}")
-                                        st.write(f"**피드백:** {feedback.get('feedback', '')}")
-                                        
-                                        results.append({
-                                            '과제카테고리': assignment_type,
-                                            '학생명': student_name,
-                                            '튜터명': tutor_name,
-                                            '질문번호': qid,
-                                            '질문제목': q['title'],
-                                            '학생답안': query,
-                                            'SQL_결과': 'O' if is_correct else 'X',
-                                            '점수': feedback.get('score', 'N/A'),
-                                            '피드백': feedback.get('feedback', ''),
-                                            '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                        })
-                                    else:
-                                        st.write(feedback)
-                                        results.append({
-                                            '과제카테고리': assignment_type,
-                                            '학생명': student_name,
-                                            '튜터명': tutor_name,
-                                            '질문번호': qid,
-                                            '질문제목': q['title'],
-                                            '학생답안': query,
-                                            'SQL_결과': 'O' if is_correct else 'X',
-                                            '점수': '0',
-                                            '피드백': str(feedback),
-                                            '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                                        })
+                                    score = feedback.get('score') if isinstance(feedback, dict) else 0
+                                    fb_text = feedback.get('feedback', '') if isinstance(feedback, dict) else str(feedback)
+                                st.write(f"**점수:** {score}")
+                                st.write(f"**피드백:** {fb_text}")
+                                # SQL_결과 상태 결정
+                                if status.startswith('exact_match'):
+                                    sql_result = 'O'
+                                elif status.startswith('close_match'):
+                                    sql_result = '△'
+                                else:
+                                    sql_result = 'X'
+                                results.append({
+                                    '과제카테고리': assignment_type,
+                                    '학생명': student_name,
+                                    '튜터명': tutor_name,
+                                    '질문번호': qid,
+                                    '질문제목': q['title'],
+                                    '학생답안': query,
+                                    'SQL_결과': sql_result,
+                                    '점수': score,
+                                    '피드백': fb_text,
+                                    '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                })
                             except Exception as e:
                                 st.markdown(f"**{qid}. {q['title']}**: ❌ (에러: {str(e)})")
                                 st.write(f"**SQL 채점 결과**: ❌")

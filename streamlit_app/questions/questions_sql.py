@@ -9,8 +9,8 @@ QUESTIONS = {
         "model_answer": """
 SELECT 
   Gender, 
-  ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM sparta.BankChurners), 2) AS gender_percentage
-FROM sparta.BankChurners
+  ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM sparta.bankchurners), 2) AS gender_percentage
+FROM sparta.bankchurners
 GROUP BY Gender;
 """,
         "evaluation_criteria": [
@@ -28,7 +28,7 @@ GROUP BY Gender;
         "model_answer": """
 SELECT 
   ROUND(AVG(Credit_Limit), 2) AS avg_credit_limit
-FROM sparta.BankChurners
+FROM sparta.bankchurners
 WHERE Attrition_Flag = 'Attrited Customer';
 """,
         "evaluation_criteria": [
@@ -48,7 +48,7 @@ WHERE Attrition_Flag = 'Attrited Customer';
 WITH activity_ranked AS (
   SELECT *,
          NTILE(10) OVER (ORDER BY Total_Trans_Ct * 1.0 / Months_on_book DESC) AS activity_rank
-  FROM sparta.BankChurners
+  FROM sparta.bankchurners
 )
 SELECT 
   ROUND(AVG(Customer_Age), 2) AS avg_age,
@@ -71,7 +71,7 @@ WHERE activity_rank = 1;
             """,
         "model_answer": """
 SELECT COUNT(*) AS customer_count
-FROM sparta.BankChurners
+FROM sparta.bankchurners
 WHERE Customer_Age >= 40
   AND Total_Trans_Amt >= 5000;
 """,
@@ -88,7 +88,7 @@ Attrition_Flag별로 평균 Credit_Limit을 계산하고, 그 중에서 가장 �
 """,
         "model_answer": """
 SELECT Attrition_Flag, ROUND(AVG(Credit_Limit), 2) AS avg_credit_limit
-FROM sparta.BankChurners
+FROM sparta.bankchurners
 GROUP BY Attrition_Flag
 ORDER BY avg_credit_limit DESC
 LIMIT 1;
@@ -107,10 +107,10 @@ LIMIT 1;
         "model_answer": """
 WITH HighLimitCustomers AS (
     SELECT *
-    FROM sparta.BankChurners
+    FROM sparta.bankchurners
     WHERE Credit_Limit > (
         SELECT AVG(Credit_Limit)
-        FROM sparta.BankChurners
+        FROM sparta.bankchurners
         WHERE Credit_Limit IS NOT NULL
     )
 )
@@ -147,7 +147,10 @@ GROUP BY Attrition_Flag;
 SELECT 
     Age_Group,
     COUNT(*) AS Total_Customers,
-    ROUND(SUM(CASE WHEN Attrition_Flag = 'Attrited Customer' THEN 1 ELSE 0 END) / COUNT(*), 3) AS Attrition_Rate
+    ROUND(
+        SUM(CASE WHEN Attrition_Flag = 'Attrited Customer' THEN 1 ELSE 0 END) * 100.0 / COUNT(*), 
+        3
+    ) AS Attrition_Rate
 FROM (
     SELECT *,
         CASE 

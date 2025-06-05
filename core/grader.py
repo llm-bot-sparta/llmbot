@@ -4,9 +4,9 @@ from service.llm_client import generate_content
 
 def parse_gemini_response(response: str):
     """
-    Gemini 응답에서 [점수], [피드백]을 파싱하여 dict로 반환
+    Gemini 응답에서 [점수], [최종 점수], [피드백]을 파싱하여 dict로 반환
     """
-    score_match = re.search(r"\[점수\]\s*(\d+)", response)
+    score_match = re.search(r"\[(?:점수|최종 점수)\]\s*(\d+)", response)
     score = int(score_match.group(1)) if score_match else None
 
     feedback_match = re.search(r"\[피드백\](.*)", response, re.DOTALL)
@@ -17,12 +17,12 @@ def parse_gemini_response(response: str):
         "feedback": feedback
     }
 
-def grade_single_question(category, question, model_answer, student_answer, evaluation_criteria):
+def grade_single_question(category, question, model_answer, student_answer, evaluation_criteria, query_status=None, error_message=None):
     """
     Gemini(Google LLM)로 학생 답안을 평가하는 함수.
     프롬프트는 prompt_builder.py에서 관리하며, LLM의 응답을 dict(점수, 피드백 등)로 반환.
     """
-    prompt = build_grading_prompt(category, question, model_answer, student_answer, evaluation_criteria)
+    prompt = build_grading_prompt(category, question, model_answer, student_answer, evaluation_criteria, query_status=query_status, error_message=error_message)
     response = generate_content(prompt)
     return parse_gemini_response(response)
     # # 임시 예시

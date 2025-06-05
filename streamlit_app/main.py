@@ -87,9 +87,10 @@ def main():
         student_list = load_student_data(selected_round)
         tutor_list = load_tutor_data(selected_round)
         
-        # 과제 선택
+        # 과제 선택 (SQL을 기본값으로)
         assignment_options = ["(선택)"] + list(QUESTIONS.keys())
-        assignment_type = st.selectbox("과제 선택", assignment_options, index=0)
+        sql_index = assignment_options.index('SQL') if 'SQL' in assignment_options else 1
+        assignment_type = st.selectbox("과제 선택", assignment_options, index=sql_index)
         
         # 과제가 선택된 경우에만 학생/튜터 선택 표시
         if assignment_type != "(선택)":

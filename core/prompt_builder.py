@@ -1,45 +1,55 @@
-def build_grading_prompt(category, question, model_answer, student_answer, evaluation_criteria):
+import importlib
+
+def build_grading_prompt(category, question, model_answer, student_answer, evaluation_criteria, query_status=None, error_message=None):
+    grading_criteria_str = ""
     if category == "SQL":
-        return f"""
-당신은 SQL 과제 채점 전문가이자 학생을 응원하는 친근한 튜터입니다.
+        # grading_schemes.grading_sql 모듈에서 GRADING_SCHEME 불러오기
+        module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
+        grading_scheme = module.GRADING_SCHEME
+        grading_criteria_str = "[채점 기준]\n"
+        for item in grading_scheme:
+            grading_criteria_str += f"- {item['name']}({item['score']}점): {item['description']}\n"
+        
+        # 오류가 발생한 경우에도 채점 기준은 동일하게, 피드백 마지막에 쿼리 문법적 오류 분석 추가
+        error_analysis_section = ""
+        if query_status in ['error', 'empty', 'no_answer']:
+            error_analysis_section = f"\n[쿼리 문법적 오류 분석]\n- 실제 오류 메시지: {error_message if error_message else '없음'}\n- 오류 원인 해설 및 수정 제안: (구체적으로 작성)"
+        
+        prompt = f"""
+당신은 {category} 과제 채점 전문가입니다.
 
 - 문제: {question}
 - 모범답안: {model_answer}
 - 학생답안: {student_answer}
 - 평가기준: {evaluation_criteria}
-
+- 쿼리 상태: {query_status}
+{grading_criteria_str}
 학생의 답안이 모범답안과 다르더라도, 논리적/문법적 오류가 없다면 높은 점수를 주세요.
 아래 조건을 꼭 지켜서 평가해 주세요.
 
-1. 점수(0~100)를 하나만 매겨주세요.
-2. 평가기준을 종합적으로 고려해, 학생에게 도움이 되는 친근한 말투로 완성된 문장 형태의 피드백을 작성해 주세요.
-3. 피드백은 학생이 다음에 더 잘할 수 있도록 구체적이고 긍정적으로 작성해 주세요.
+1. 각 평가기준(정확도, 가독성, 효율성, 분석력 등)에 대해 **5점 단위(0, 5, 10, ..., 100)로만** 부분 점수를 각각 매겨주세요. (예: 정확도 50점, 가독성 20점, 효율성 15점)
+2. 각 기준별 점수의 합이 100점이 되도록 최종 점수도 함께 출력해 주세요.
+3. 각 평가기준별로 '참고할 점'을 한두 문장으로 구체적으로 작성해 주세요. (예: 잘한 점, 부족한 점, 개선점 등)
+4. 마지막 피드백은 평가자가 참고할 수 있도록, 학생에게 직접 전달하는 친근한 말투가 아니라 틀린 부분, 부족한 점, 개선점 등 객관적이고 구체적인 정보 위주로 작성해 주세요.
 
 결과는 아래 형식으로 출력해 주세요.
 
-[점수] 95  
-[피드백] 쿼리 작성이 전반적으로 매우 훌륭해요! WHERE 조건과 GROUP BY 사용도 잘했고, 결과 정렬까지 신경 쓴 점이 인상적입니다. 다음에는 쿼리 최적화도 한 번 더 고민해보면 더 좋을 것 같아요. 수고 많았어요!
-"""
-    elif category == "Python기초":
-        return f"""
-당신은 Python 과제 채점 전문가이자 학생을 응원하는 친근한 튜터입니다.
+[기준별 점수]
+정확도: 45 / 50
+가독성: 15 / 20
+효율성: 10 / 15
+분석력: 10 / 15
 
-- 문제: {question}
-- 모범답안: {model_answer}
-- 학생답안: {student_answer}
-- 평가기준: {evaluation_criteria}
+[기준별 참고사항]
+정확도: WHERE 조건에서 'Attrited Customer' 필터가 누락됨.
+가독성: 쿼리 구조는 명확함.
+효율성: CTE 활용이 부족함.
 
-학생의 답안이 모범답안과 다르더라도, 논리적/문법적 오류가 없다면 높은 점수를 주세요.
-아래 조건을 꼭 지켜서 평가해 주세요.
-
-1. 점수(0~100)를 하나만 매겨주세요.
-2. 평가기준을 종합적으로 고려해, 학생에게 도움이 되는 친근한 말투로 완성된 문장 형태의 피드백을 작성해 주세요.
-3. 피드백은 학생이 다음에 더 잘할 수 있도록 구체적이고 긍정적으로 작성해 주세요.
-
-결과는 아래 형식으로 출력해 주세요.
-
-[점수] 95  
-[피드백] 함수 정의와 리스트 컴프리헨션 활용이 정말 잘 되었어요! 코드가 깔끔해서 읽기 좋았습니다. 다음에는 예외 처리도 한 번 시도해보면 더 좋을 것 같아요. 잘했어요!
+[최종 점수] 80
+[피드백] 전반적으로 쿼리 구조는 명확하나, 일부 필터 조건과 효율성에서 아쉬움{error_analysis_section}
 """
     else:
-        raise ValueError(f"지원하지 않는 카테고리: {category}")
+        prompt = ""
+        # 추후 다른 문제 유형의 프롬프트 추가 가능
+    
+    return prompt

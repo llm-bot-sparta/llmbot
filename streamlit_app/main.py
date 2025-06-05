@@ -45,34 +45,86 @@ def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     return csv_filename
 
 def round_to_dir(round_str):
-    if round_str == '7회차':
+    if round_str == '7th':
         return '7th_sql_BankChurners'
     else :
         ValueError(f"지원하지 않는 회차입니다: {round_str}")
     return round_str
+
+def load_student_data(round_str):
+    """회차별 학생 데이터를 로드하는 함수"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    csv_path = os.path.join(project_root, f'data/{round_str}/data_{round_str}_student.csv')
+    
+    df = pd.read_csv(csv_path)
+    return sorted(df['student'].dropna().tolist())
+
+def load_tutor_data(round_str):
+    """회차별 튜터 데이터를 로드하는 함수"""
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    csv_path = os.path.join(project_root, f'data/{round_str}/data_{round_str}_tutor.csv')
+    
+    df = pd.read_csv(csv_path)
+    return sorted(df['tutor'].dropna().tolist())
 
 def main():
     st.title("🔥 과제 자동 채점기")
     
     # 사이드바: 회차 선택, 과제 선택, 학생명 직접 입력
     with st.sidebar:
-        round_options = ['7th']  # 필요시 확장
+        # 과제 회차 선택
+        round_options = ["(선택)", '7th']  # 필요시 확장
         selected_round = st.selectbox("과제 회차 선택", round_options, index=0)
-        assignment_type = st.selectbox("과제 선택", list(QUESTIONS.keys()), index=0)
-        student_name = st.text_input("학생 이름을 입력하세요")
         
-        # 튜터 선택 드롭다운
-        tutor_list = ["임정", "곽승예", "신한결", "원유선", "김대명", "허진성", "권현진", "김연준", "기타"]
-        selected_tutor = st.selectbox("튜터 선택", tutor_list)
+        # 변수 초기화
+        assignment_type = "(선택)"
+        student_name = None
+        tutor_name = None
         
-        # 기타 선택 시 직접 입력
-        if selected_tutor == "기타":
-            tutor_name = st.text_input("튜터 이름을 직접 입력하세요")
-        else:
-            tutor_name = selected_tutor
+        # 회차가 선택된 경우에만 학생/튜터 데이터 로드
+        if selected_round != "(선택)":
+            # 회차에 따른 학생/튜터 데이터 로드
+            student_list = load_student_data(selected_round)
+            tutor_list = load_tutor_data(selected_round)
+            
+            # 과제 선택
+            assignment_options = ["(선택)"] + list(QUESTIONS.keys())
+            assignment_type = st.selectbox("과제 선택", assignment_options, index=0)
+            
+            # 과제가 선택된 경우에만 학생/튜터 선택 표시
+            if assignment_type != "(선택)":
+                # 학생 선택 드롭다운 (기타 옵션 추가)
+                student_list_with_other = ["(선택)"] + student_list + ["기타"]
+                selected_student = st.selectbox("학생 선택", student_list_with_other, index=0)
+                
+                # 기타 선택 시 학생 이름 직접 입력
+                if selected_student == "기타":
+                    student_name = st.text_input("학생 이름을 직접 입력하세요")
+                elif selected_student == "(선택)":
+                    student_name = None
+                else:
+                    student_name = selected_student
+                
+                # 튜터 선택 드롭다운
+                tutor_list_with_other = ["(선택)"] + tutor_list + ["기타"]
+                selected_tutor = st.selectbox("튜터 선택", tutor_list_with_other, index=0)
+                
+                # 기타 선택 시 직접 입력
+                if selected_tutor == "기타":
+                    tutor_name = st.text_input("튜터 이름을 직접 입력하세요")
+                elif selected_tutor == "(선택)":
+                    tutor_name = None
+                else:
+                    tutor_name = selected_tutor
+                    
+                # 선택된 학생-튜터 정보 표시
+                if student_name and tutor_name:
+                    st.info(f"📌 {student_name} 학생의 담당 튜터: {tutor_name}")
     
-    # 메인 화면: 카테고리별 전체 문제 한 번에 표시
-    if assignment_type:
+    # 메인 화면: 과제가 선택된 경우에만 문제 표시
+    if assignment_type != "(선택)":
         if len(QUESTIONS[assignment_type]) == 0:
             st.info(f"'{assignment_type}' 카테고리에는 아직 등록된 문제가 없습니다.")
         else:
@@ -95,11 +147,11 @@ def main():
             # 채점 버튼
             if st.button("전체 문항 채점하기"):
                 if not student_name:
-                    st.warning("학생 이름을 입력해야 채점할 수 있습니다.")
+                    st.warning("학생을 선택해주세요.")
                     return
                 
                 if not tutor_name:
-                    st.warning("튜터 이름을 입력해야 채점할 수 있습니다.")
+                    st.warning("튜터를 선택해주세요.")
                     return
                 
                 st.subheader("채점 결과")

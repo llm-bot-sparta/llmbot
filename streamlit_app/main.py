@@ -75,7 +75,7 @@ def main():
     # 사이드바: 회차 선택, 과제 선택, 학생명 직접 입력
     with st.sidebar:
         # 과제 회차 선택
-        round_options = ["(선택)", '7th']  # 필요시 확장
+        round_options = ['7th']  # 필요시 확장
         selected_round = st.selectbox("과제 회차 선택", round_options, index=0)
         
         # 변수 초기화
@@ -83,45 +83,43 @@ def main():
         student_name = None
         tutor_name = None
         
-        # 회차가 선택된 경우에만 학생/튜터 데이터 로드
-        if selected_round != "(선택)":
-            # 회차에 따른 학생/튜터 데이터 로드
-            student_list = load_student_data(selected_round)
-            tutor_list = load_tutor_data(selected_round)
+        # 회차에 따른 학생/튜터 데이터 로드
+        student_list = load_student_data(selected_round)
+        tutor_list = load_tutor_data(selected_round)
+        
+        # 과제 선택
+        assignment_options = ["(선택)"] + list(QUESTIONS.keys())
+        assignment_type = st.selectbox("과제 선택", assignment_options, index=0)
+        
+        # 과제가 선택된 경우에만 학생/튜터 선택 표시
+        if assignment_type != "(선택)":
+            # 학생 선택 드롭다운 (기타 옵션 추가)
+            student_list_with_other = ["(선택)"] + student_list + ["기타"]
+            selected_student = st.selectbox("학생 선택", student_list_with_other, index=0)
             
-            # 과제 선택
-            assignment_options = ["(선택)"] + list(QUESTIONS.keys())
-            assignment_type = st.selectbox("과제 선택", assignment_options, index=0)
+            # 기타 선택 시 학생 이름 직접 입력
+            if selected_student == "기타":
+                student_name = st.text_input("학생 이름을 직접 입력하세요")
+            elif selected_student == "(선택)":
+                student_name = None
+            else:
+                student_name = selected_student
             
-            # 과제가 선택된 경우에만 학생/튜터 선택 표시
-            if assignment_type != "(선택)":
-                # 학생 선택 드롭다운 (기타 옵션 추가)
-                student_list_with_other = ["(선택)"] + student_list + ["기타"]
-                selected_student = st.selectbox("학생 선택", student_list_with_other, index=0)
+            # 튜터 선택 드롭다운
+            tutor_list_with_other = ["(선택)"] + tutor_list + ["기타"]
+            selected_tutor = st.selectbox("튜터 선택", tutor_list_with_other, index=0)
+            
+            # 기타 선택 시 직접 입력
+            if selected_tutor == "기타":
+                tutor_name = st.text_input("튜터 이름을 직접 입력하세요")
+            elif selected_tutor == "(선택)":
+                tutor_name = None
+            else:
+                tutor_name = selected_tutor
                 
-                # 기타 선택 시 학생 이름 직접 입력
-                if selected_student == "기타":
-                    student_name = st.text_input("학생 이름을 직접 입력하세요")
-                elif selected_student == "(선택)":
-                    student_name = None
-                else:
-                    student_name = selected_student
-                
-                # 튜터 선택 드롭다운
-                tutor_list_with_other = ["(선택)"] + tutor_list + ["기타"]
-                selected_tutor = st.selectbox("튜터 선택", tutor_list_with_other, index=0)
-                
-                # 기타 선택 시 직접 입력
-                if selected_tutor == "기타":
-                    tutor_name = st.text_input("튜터 이름을 직접 입력하세요")
-                elif selected_tutor == "(선택)":
-                    tutor_name = None
-                else:
-                    tutor_name = selected_tutor
-                    
-                # 선택된 학생-튜터 정보 표시
-                if student_name and tutor_name:
-                    st.info(f"📌 {student_name} 학생의 담당 튜터: {tutor_name}")
+            # 선택된 학생-튜터 정보 표시
+            if student_name and tutor_name:
+                st.info(f"📌 {student_name} 학생의 담당 튜터: {tutor_name}")
     
     # 메인 화면: 과제가 선택된 경우에만 문제 표시
     if assignment_type != "(선택)":

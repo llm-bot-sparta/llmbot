@@ -1,5 +1,4 @@
-streamlit==1.32.0
-pandas==2.2.1
+altair==5.5.0
 annotated-types==0.7.0
 appnope==0.1.4
 asttokens==3.0.0
@@ -41,6 +40,7 @@ narwhals==1.37.1
 nest-asyncio==1.6.0
 numpy==2.2.5
 packaging==24.2
+pandas==2.2.3
 parso==0.8.4
 pexpect==4.9.0
 pillow==11.2.1
@@ -58,6 +58,7 @@ pydantic==2.11.4
 pydantic_core==2.33.2
 pydeck==0.9.1
 Pygments==2.19.1
+PyMySQL==1.1.1
 pyparsing==3.2.3
 python-dateutil==2.9.0.post0
 python-dotenv==1.1.0
@@ -69,7 +70,9 @@ rpds-py==0.24.0
 rsa==4.9.1
 six==1.17.0
 smmap==5.0.2
+SQLAlchemy==2.0.41
 stack-data==0.6.3
+streamlit==1.45.0
 tenacity==9.1.2
 toml==0.10.2
 tornado==6.4.2
@@ -81,4 +84,3 @@ tzdata==2025.2
 uritemplate==4.1.1
 urllib3==2.4.0
 wcwidth==0.2.13
-sqlalchemy==2.0.28

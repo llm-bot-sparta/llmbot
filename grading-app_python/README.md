@@ -9,15 +9,17 @@
 - app.py: 로컬에서 테스트 할 수 있도록 streamlit 으로 구현되어있는 프론트 서버
 
 ## 실행방법(cloud run function에 배포된 경우)
-
-curl -X POST "`cloudrun function url" -H "Content-Type: application/json" -d '{"code": "def calculate_stock(numbers):\n    if not numbers: return 0\n    return sum(numbers) / len(numbers)", "function_name": "calculate_stock", "test_cases": [{"input": [[10, 20, 30, 40, 50]], "output": 30.0}]}'
+- bash shell에서
+``` 
+curl -X POST "`{cloudrun function url}" -H "Content-Type: application/json" -d '{"code": "def calculate_stock(numbers):\n    if not numbers: return 0\n    return sum(numbers) / len(numbers)", "function_name": "calculate_stock", "test_cases": [{"input": [[10, 20, 30, 40, 50]], "output": 30.0}]}'
+```
 ## 실행방법(로컬)
 
 1. python 3.12 및 requirments.txt 실행
 2. 백엔드 서버실행 
 - `functions_framework --target=grade_code --debug`
 3-1 bash에서 curl 명령어로 테스트
-
+```
 curl -X POST "http://localhost:8080" \
 -H "Content-Type: application/json" \
 -d '{
@@ -28,7 +30,7 @@ curl -X POST "http://localhost:8080" \
         {"input": [-2], "output": 4}
     ]
 }'
-
+```
 3-2 (선택, 로컬에서 테스트 시) 프론트 서버 실행
 - `streamlit run app.py` 
 - 로컬에서 테스트 시 pandas, streamlit 추가 설치 필요함

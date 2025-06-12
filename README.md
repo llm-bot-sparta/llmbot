@@ -30,7 +30,7 @@
 
 ## 🗂️ 폴더별 설명
 
-### 루트 디렉토리
+### base 디렉토리
 
 | 항목 | 설명 |
 |------|------|
@@ -102,3 +102,7 @@
 |------|------|
 | `bq_engine` | SQL 과제 채점을 위해 BigQuery에 SQL을 날리는 코드였으나, MySQL 환경이여서 deprecated됨 |
 | `generate_answer.py` | SQL 과제 채점을 위해서 정답 테이블을 bg_engine을 이용해 만드는 코드입니다. |
+
+
+## grading-app-python
+- cloud run function에 배포하는 코드

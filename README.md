@@ -106,3 +106,5 @@
 
 ## grading-app-python
 - cloud run function에 배포하는 코드
+- 가이드는 다음 링크 참조
+- https://github.com/llm-bot-sparta/llmbot/tree/main/grading-app_python

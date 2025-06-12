@@ -1,16 +1,18 @@
 # LLM 스코 채점자동화 & 질문 답변
 
-## 일반 개요
+# 일반 개요
 - 목적: 코딩 과제에 대한 답변에 대한 템플릿과 가이드라인을 제공하는 서비스
-- 구조: Cloud run -> Gemini -> Streamlit
+- 구조: Cloud run -> Gemini -> Streamlit  -> Cloud SQL/cloud run function
 - 환경: Python 3.12.3 
 - 작동방식
     - 웹 사이트에는 특정 과제에 대한 모범답안, 채점가이드 등이 사전 Prompting 되어있음
     - 튜터들은 각 학생의 제출코드를 제출하여 채점하기를 클릭
     - LLM 봇은 모범답안과 제출코드를 비교하여 채점가이드를 출력
-    - (SQL) 학생들의 제출코드는 빅쿼리에 있는 데이터에 실행되어 결과가 출력되며 이는 정답과 비교하여 True/False를 반환
+    - (SQL) Cloud sql에 있는 데이터에 실행되어 결과가 출력되며 이는 정답과 비교하여 True/False를 반환
+    - (Python ) cloud function 에 있는 serveless에 실행되어 채점. 자세한 설명은 grading-app-python 모듈의 README.md 참고
 
 ---
+# base - 기본 뼈대 및 SQL 채점 기능
 ## 세팅 방법
 - `pip install -r requirements.txt`
 - `pip install --upgrade google-api-python-client`  # google 모듈 업그레이드가 필요한 경우가 있음
@@ -29,8 +31,6 @@
 - 승예님 작성 필요
 
 ## 🗂️ 폴더별 설명
-
-### base 디렉토리
 
 | 항목 | 설명 |
 |------|------|
@@ -104,7 +104,7 @@
 | `generate_answer.py` | SQL 과제 채점을 위해서 정답 테이블을 bg_engine을 이용해 만드는 코드입니다. |
 
 
-## grading-app-python
+# grading-app-python - python 채점 기능
 - cloud run function에 배포하는 코드
 - 가이드는 다음 링크 참조
 - https://github.com/llm-bot-sparta/llmbot/tree/main/grading-app_python

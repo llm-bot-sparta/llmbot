@@ -1,0 +1,73 @@
+﻿과제카테고리,학생명,튜터명,질문번호,질문제목,학생답안,점수,피드백,채점시간
+Python기초,test,곽승예,PYTHON_1,숫자 리스트의 평균 계산하기,"numbers = [10, 20, 30, 40, 50]
+def calculate_stock(numbers):
+    total_avg = sum(numbers) / len(numbers)
+    return total_avg
+
+calculate_stock(numbers)",80,"**
+
+전반적으로 코드는 간결하고 명확하며, 평균 계산 로직도 정확합니다. 하지만 함수 외부에서 `numbers` 리스트를 정의하는 것은 함수의 재사용성을 떨어뜨릴 수 있습니다. 함수 내부에서 리스트를 정의하거나, 함수 호출 시 인자로 전달하는 방식으로 개선하면 더 좋은 코드가 될 것입니다. 예를 들어, `calculate_stock([10, 20, 30, 40, 50])` 와 같이 호출하여 활용도를 높일 수 있습니다.",2025-06-13 16:36:20
+Python기초,test,곽승예,PYTHON_2,간단한 사칙연산 계산기 함수 만들기,"def simple_calculator(num1, num2, operator):
+    if operator == '+':
+        return num1 + num2
+    elif operator == '-':
+        return num1 - num2
+    elif operator == '*':
+        return num1 * num2
+    elif operator == '/':
+        if num2 == 0:
+            return 'Cannot divide by zero'
+        else:
+            return num1 / num2
+    else:
+        return 'Invalid operator'",100,"학생 답안은 모범 답안과 완전히 동일하며, 모든 평가 기준을 충족합니다. 기본적인 사칙연산과 0으로 나누는 경우에 대한 예외 처리까지 완벽하게 구현했습니다. 가독성 측면에서도 코드 스타일이 깔끔하고 이해하기 쉬우며, 효율성 측면에서도 불필요한 코드가 전혀 없습니다.
+```",2025-06-13 16:36:22
+Python기초,test,곽승예,PYTHON_3,가장 많은 제품 찾기,"sales_data = {""apple"": 50, ""orange"": 2, ""banana"" : 30}
+def find_top_seller(data):
+  top_product = """"
+  max_sales = -1
+
+  for product, sales in data.items():
+    if sales > max_sales:
+      max_sales = sales
+      top_product = product
+  return top_product, max_sales
+find_top_seller(sales_data)",100,"학생 답안은 모범 답안과 거의 동일하며, 완벽하게 문제를 해결했습니다. 딕셔너리 자료구조를 효과적으로 활용하고, 코드도 간결하고 가독성이 좋습니다. 아주 잘했습니다.",2025-06-13 16:36:24
+Python기초,test,곽승예,PYTHON_4,중복 문자 제거 및 빈도수 계산,"input_string = ""abracadabra123321""
+def remove_duplicates_and_count(s):
+    frequency = {}  # 각 문자의 빈도수를 저장할 딕셔너리
+
+    for char in input_string:
+      # 각 문자의 빈도수 업데이트
+      if char in frequency.keys():
+          frequency[char] += 1
+      else:
+          frequency[char] = 1
+
+    return list(frequency.items())
+remove_duplicates_and_count(input_string)",80,"`input_string`이 함수 외부에서 정의되어 있어 함수의 재사용성이 떨어집니다. 함수 내부에서 문자열을 받아서 처리하도록 수정하는 것이 좋습니다. `frequency.keys()`는 불필요하며, `char in frequency`로 대체 가능합니다. 함수의 반환 값을 활용하는 코드가 필요합니다.",2025-06-13 16:36:26
+Python기초,test,곽승예,PYTHON_5,이동 거리 구하기,"player_positions = {
+    ""John Doe"": [(0, 0), (1, 1), (2, 2), (5, 5)],
+    ""Jane Smith"": [(2, 2), (3, 8), (6, 8)],
+    ""Mike Brown"": [(0, 0), (3, 4), (6, 8)]
+}
+
+def calculate_total_distances(player_positions):
+    records = []
+    for player, positions in player_positions.items():
+            total_distance = 0.0
+            for i in range(0, len(positions)-1):
+                x1, y1 = positions[i]
+                x2, y2 = positions[i+1]
+                distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+                total_distance += distance
+            records.append((player,round(total_distance,2)))
+    return records
+calculate_total_distances(player_positions)",None,"**
+
+전반적으로 문제 해결 능력은 뛰어나지만, 몇 가지 개선점을 통해 코드의 완성도를 높일 수 있습니다.
+
+*   **player_positions 변수 위치:** `player_positions` 변수를 함수 외부로 이동시켜 함수의 재사용성을 높이는 것이 좋습니다. 함수는 특정 입력에 대해 일관된 출력을 반환해야 하며, 외부 변수에 의존하는 경우 예기치 않은 결과를 초래할 수 있습니다.
+*   **변수명 개선:** 변수명을 좀 더 명확하고 설명적으로 작성하면 코드의 가독성을 향상시킬 수 있습니다. 예를 들어, `x1`, `y1`, `x2`, `y2` 대신 `x_coordinate1`, `y_coordinate1`, `x_coordinate2`, `y_coordinate2`와 같이 사용하는 것을 고려해볼 수 있습니다.
+*   **예외 처리:** 입력 데이터에 대한 예외 처리를 추가하면 더욱 robust한 코드를 만들 수 있습니다. 예를 들어, `positions` 리스트가 비어있는 경우나 좌표값이 숫자가 아닌 경우에 대한 처리를 추가할 수 있습니다.
+*   **Docstring 작성:** 함수에 대한 설명을 docstring으로 작성하면 다른 개발자가 코드를 이해하고 사용하기 쉬워집니다. 함수가 어떤 역할을 하는지, 어떤 입력을 받는지, 어떤 출력을 반환하는지 명확하게 설명하는 docstring을 작성하는 것이 좋습니다.",2025-06-13 16:36:30

@@ -17,7 +17,7 @@ def get_grading_scheme(assignment_type):
     if assignment_type == "SQL":
         module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
         return getattr(module, "GRADING_SCHEME", [])
-    elif assignment_type == "python_basic":
+    elif assignment_type == "Python기초":
         module = importlib.import_module("streamlit_app.grading_schemes.grading_python_basic")
         return getattr(module, "GRADING_SCHEME", [])
     # 추후 다른 과제 유형 추가 가능
@@ -142,6 +142,9 @@ def main():
                         st.markdown("**공통 채점 기준 (총 100점)**")
                         for scheme in grading_scheme:
                             st.write(f"- {scheme['name']} ({scheme['score']}점): {scheme['description']}")
+                    # 정답 코드도 함께 표시
+                    st.markdown("**정답 코드**")
+                    st.code(q["model_answer"], language="python")
             
             # 채점 버튼
             if st.button("전체 문항 채점하기"):
@@ -154,10 +157,10 @@ def main():
                     return
                 
                 st.subheader("채점 결과")
-                results = []  # 모든 문제의 결과를 저장할 리스트
-                
-                # SQL 과제인 경우 MySQL 엔진을 통한 채점
+                results = []
+
                 if assignment_type == "SQL":
+                    # SQL 과제인 경우 MySQL 엔진을 통한 채점
                     # answer_dir을 회차+과제유형 조합으로 생성
                     answer_dir = f"answer/{selected_round}_{assignment_type}/"
                     print(answer_dir)
@@ -295,70 +298,129 @@ def main():
                                     '피드백': f'에러 발생: {str(e)}',
                                     '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
-                else:
-                    # 기존 Gemini LLM을 통한 평가
+                elif assignment_type == "Python기초":
+                    from service.cloud_function_client import call_python_grader
+                    from service.local_grader import execute_python_code, display_test_results
+                    from core.grader import grade_single_question
+                    
+                    # 로컬 개발 환경인지 확인
+                    is_local = "streamlit" in sys.modules and not os.getenv("K_SERVICE")
+                    if is_local:
+                        st.info("로컬 환경에서 실행 중입니다.")
+                    
+                    # 문제별 채점 결과를 저장할 딕셔너리
+                    grading_results = {}
+                    
                     for qid, q in QUESTIONS[assignment_type].items():
-                        answer = answer_inputs[qid]
-                        if not answer:
-                            st.markdown(f"**{qid}. {q['title']}**: ❌ (답변 없음)")
-                            st.write(f"**SQL 채점 결과**: ❌")
-                            st.write(f"**점수**: 0")
-                            st.write(f"**피드백**: 답변이 입력되지 않았습니다.")
-                            results.append({
-                                '과제카테고리': assignment_type,
-                                '학생명': student_name,
-                                '튜터명': tutor_name,
-                                '질문번호': qid,
-                                '질문제목': q['title'],
-                                '학생답안': answer,
-                                'SQL_결과': 'X',
-                                '점수': '0',
-                                '피드백': '답변이 입력되지 않았습니다.',
-                                '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            })
+                        student_code = answer_inputs[qid]
+                        function_name = q.get("function_name")
+                        test_cases = q.get("test_cases")
+                        
+                        if not student_code:
+                            st.warning(f"문제 {qid}에 대한 답변이 입력되지 않았습니다.")
+                            grading_results[qid] = {
+                                "score": 0,
+                                "feedback": "답변이 입력되지 않았습니다.",
+                                "status": "empty"
+                            }
                             continue
-                            
-                        feedback = grade_single_question(
-                            assignment_type,
-                            q['content'],
-                            q['model_answer'],
-                            answer,
-                            q['evaluation_criteria']
-                        )
                         
-                        st.markdown(f"**{qid}. {q['title']}**")
-                        st.write(f"**SQL 채점 결과**: ❌")  # SQL이 아닌 과제는 항상 X
-                        
-                        if isinstance(feedback, dict):
-                            st.write(f"**점수:** {feedback.get('score', 'N/A')}")
-                            st.write(f"**피드백:** {feedback.get('feedback', '')}")
+                        try:
+                            # 코드 실행 및 결과 받기
+                            grading_result = execute_python_code(student_code, function_name, test_cases) if is_local else \
+                                            call_python_grader(student_code, function_name, test_cases)
                             
+                            if "error" in grading_result:
+                                st.error(grading_result["error"])
+                                grading_results[qid] = {
+                                    "score": 0,
+                                    "feedback": f"실행 오류: {grading_result['error']}",
+                                    "status": "error"
+                                }
+                            else:
+                                # 실행 결과 표시
+                                if "output" in grading_result:
+                                    st.markdown(f"### 문제 {qid} 실행 결과")
+                                    if is_local:
+                                        display_test_results(grading_result["output"])
+                                    else:
+                                        st.code(str(grading_result["output"]))
+                                
+                                # LLM을 통한 피드백 생성
+                                llm_feedback = grade_single_question(
+                                    category="python_basic",
+                                    question=q.get("question"),
+                                    model_answer=q.get("model_answer"),
+                                    student_answer=student_code,
+                                    evaluation_criteria=q.get("evaluation_criteria"),
+                                    query_status="success" if "output" in grading_result else "error",
+                                    error_message=grading_result.get("error")
+                                )
+                                
+                                # LLM 피드백 표시
+                                st.write(f"**점수**: {llm_feedback.get('score')}점")
+                                st.write(f"**피드백**: {llm_feedback.get('feedback')}")
+                                st.markdown("---")
+                                
+                                # 채점 결과 저장
+                                grading_results[qid] = {
+                                    "score": llm_feedback.get('score', 0),
+                                    "feedback": llm_feedback.get('feedback', ''),
+                                    "status": "success"
+                                }
+                                
+                                # 결과 저장
+                                results.append({
+                                    '과제카테고리': assignment_type,
+                                    '학생명': student_name,
+                                    '튜터명': tutor_name,
+                                    '질문번호': qid,
+                                    '질문제목': q['title'],
+                                    '학생답안': student_code,
+                                    '점수': str(llm_feedback.get('score', 0)),
+                                    '피드백': llm_feedback.get('feedback', ''),
+                                    '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                })
+                                
+                        except Exception as e:
+                            st.error(f"문제 {qid} 채점 중 오류 발생: {str(e)}")
+                            st.exception(e)  # 전체 에러 트레이스백 표시
+                            grading_results[qid] = {
+                                "score": 0,
+                                "feedback": f"채점 중 오류 발생: {str(e)}",
+                                "status": "error"
+                            }
                             results.append({
                                 '과제카테고리': assignment_type,
                                 '학생명': student_name,
                                 '튜터명': tutor_name,
                                 '질문번호': qid,
                                 '질문제목': q['title'],
-                                '학생답안': answer,
-                                'SQL_결과': 'X',
-                                '점수': feedback.get('score', 'N/A'),
-                                '피드백': feedback.get('feedback', ''),
-                                '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-                            })
-                        else:
-                            st.write(feedback)
-                            results.append({
-                                '과제카테고리': assignment_type,
-                                '학생명': student_name,
-                                '튜터명': tutor_name,
-                                '질문번호': qid,
-                                '질문제목': q['title'],
-                                '학생답안': answer,
-                                'SQL_결과': 'X',
+                                '학생답안': student_code,
                                 '점수': '0',
-                                '피드백': str(feedback),
+                                '피드백': f'채점 중 오류 발생: {str(e)}',
                                 '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             })
+                    
+                    # 문제별 상세 결과 표시
+                    st.markdown("---")
+                    st.markdown("## 채점 결과 요약")
+                    for qid, result in grading_results.items():
+                        with st.expander(f"문제 {qid} ({result['score']}점)"):
+                            st.write(f"상태: {'성공' if result['status'] == 'success' else '오류'}")
+                            st.write("피드백:")
+                            st.write(result['feedback'])
+                    
+                    # 결과 저장
+                    if st.button("채점 결과 저장"):
+                        try:
+                            # 결과 저장 로직 (예: DB에 저장)
+                            st.success("채점 결과가 저장되었습니다.")
+                        except Exception as e:
+                            st.error(f"결과 저장 중 오류 발생: {str(e)}")
+                else:
+                    # (필요하다면 다른 과제 유형 처리)
+                    pass
                 
                 # 모든 결과를 하나의 CSV 파일로 저장
                 if results:

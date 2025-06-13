@@ -1,0 +1,9 @@
+﻿과제카테고리,학생명,튜터명,질문번호,질문제목,학생답안,점수,피드백,채점시간
+Python기초,test,곽승예,PYTHON_1,숫자 리스트의 평균 계산하기,"numbers = [10, 20, 30, 40, 50]
+def calculate_stock(numbers):
+    total_avg = sum(numbers) / len(numbers)
+    return total_avg
+
+calculate_stock(numbers)",80,"*   함수 외부에서 `numbers` 리스트를 정의하는 것은 함수 독립성을 떨어뜨릴 수 있습니다. 함수는 외부 변수에 의존하지 않고 독립적으로 작동하는 것이 좋습니다.
+*   함수 외부에서 `calculate_stock(numbers)`를 호출하는 것은 테스트를 위한 것일 수 있지만, 일반적으로 함수는 정의만 하고 필요할 때 호출하는 것이 좋습니다.
+*   전반적으로 코드 가독성이 좋고 효율적인 계산 방식을 사용했지만, 함수 독립성 측면에서 개선할 부분이 있습니다.",2025-06-13 16:02:33

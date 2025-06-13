@@ -1,0 +1,67 @@
+﻿과제카테고리,학생명,튜터명,질문번호,질문제목,학생답안,점수,피드백,채점시간
+Python기초,test,곽승예,PYTHON_1,숫자 리스트의 평균 계산하기,"numbers = [10, 20, 30, 40, 50]
+def calculate_stock(numbers):
+    total_avg = sum(numbers) / len(numbers)
+    return total_avg
+
+calculate_stock(numbers)",90,"함수 외부에서 numbers 리스트를 정의하는 부분은 함수 독립성을 저해할 수 있으므로, 함수 내에서 정의하거나 인자로 전달하는 방식으로 개선하는 것이 좋습니다. calculate_stock(numbers)를 호출하는 부분은 채점 시스템에서 실행되므로, 학생 답안에 포함될 필요는 없습니다.",2025-06-13 16:23:49
+Python기초,test,곽승예,PYTHON_2,간단한 사칙연산 계산기 함수 만들기,"def simple_calculator(num1, num2, operator):
+    if operator == '+':
+        return num1 + num2
+    elif operator == '-':
+        return num1 - num2
+    elif operator == '*':
+        return num1 * num2
+    elif operator == '/':
+        if num2 == 0:
+            return 'Cannot divide by zero'
+        else:
+            return num1 / num2
+    else:
+        return 'Invalid operator'
+print(simple_calculator(10, 5, '+'))  # 출력: 15
+print(simple_calculator(10, 5, '-'))  # 출력: 5
+print(simple_calculator(10, 5, '*'))  # 출력: 50
+print(simple_calculator(10, 0, '/'))  # 출력: 'Cannot divide by zero'",100,"완벽한 코드입니다. 모범 답안과 동일하며, 가독성, 정확성, 효율성 모두 뛰어납니다. 추가적인 개선 사항은 없습니다.",2025-06-13 16:23:51
+Python기초,test,곽승예,PYTHON_3,가장 많은 제품 찾기,"sales_data = {""apple"": 50, ""orange"": 2, ""banana"" : 30}
+def find_top_seller(data):
+  top_product = """"
+  max_sales = -1
+
+  for product, sales in data.items():
+    if sales > max_sales:
+      max_sales = sales
+      top_product = product
+  return top_product, max_sales
+find_top_seller(sales_data)",100,"학생 답안은 모범 답안과 거의 동일하며, 완벽하게 문제를 해결했습니다. `sales_data`를 함수 외부에서 정의하고 사용하는 방식도 좋은 습관입니다.",2025-06-13 16:23:53
+Python기초,test,곽승예,PYTHON_4,중복 문자 제거 및 빈도수 계산,"input_string = ""abracadabra123321""
+def remove_duplicates_and_count(s):
+    frequency = {}  # 각 문자의 빈도수를 저장할 딕셔너리
+
+    for char in input_string:
+      # 각 문자의 빈도수 업데이트
+      if char in frequency.keys():
+          frequency[char] += 1
+      else:
+          frequency[char] = 1
+
+    return list(frequency.items())
+remove_duplicates_and_count(input_string)",80,"함수 외부 변수 사용으로 인해 함수의 독립성이 떨어집니다. 함수의 파라미터를 활용하여 코드를 작성해야 합니다. 또한, 딕셔너리 key 확인 시 `in` 연산자를 사용하는 것이 더 효율적이며, 코드의 실행 결과를 활용하는 부분을 추가해야 합니다.",2025-06-13 16:23:55
+Python기초,test,곽승예,PYTHON_5,이동 거리 구하기,"player_positions = {
+    ""John Doe"": [(0, 0), (1, 1), (2, 2), (5, 5)],
+    ""Jane Smith"": [(2, 2), (3, 8), (6, 8)],
+    ""Mike Brown"": [(0, 0), (3, 4), (6, 8)]
+}
+
+def calculate_total_distances(player_positions):
+    records = []
+    for player, positions in player_positions.items():
+            total_distance = 0.0
+            for i in range(0, len(positions)-1):
+                x1, y1 = positions[i]
+                x2, y2 = positions[i+1]
+                distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+                total_distance += distance
+            records.append((player,round(total_distance,2)))
+    return records
+calculate_total_distances(player_positions)",100,"모범 답안과 동일한 로직과 구조를 가지고 있으며, 가독성, 효율성 면에서도 뛰어납니다. 완벽한 코드입니다.",2025-06-13 16:23:57

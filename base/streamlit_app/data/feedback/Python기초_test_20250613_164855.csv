@@ -1,0 +1,61 @@
+﻿과제카테고리,학생명,튜터명,질문번호,질문제목,학생답안,점수,피드백,채점시간
+Python기초,test,곽승예,PYTHON_2,간단한 사칙연산 계산기 함수 만들기,"def simple_calculator(num1, num2, operator):
+    if operator == '+':
+        return num1 + num2
+    elif operator == '-':
+        return num1 - num2
+    elif operator == '*':
+        return num1 * num2
+    elif operator == '/':
+        if num2 == 0:
+            return 'Cannot divide by zero'
+        else:
+            return num1 / num2
+    else:
+        return 'Invalid operator'",100,"모범 답안과 동일하며, 완벽한 코드입니다. 추가적인 개선 사항은 없습니다.",2025-06-13 16:48:47
+Python기초,test,곽승예,PYTHON_3,가장 많은 제품 찾기,"sales_data = {""apple"": 50, ""orange"": 2, ""banana"" : 30}
+def find_top_seller(data):
+  top_product = """"
+  max_sales = -1
+
+  for product, sales in data.items():
+    if sales > max_sales:
+      max_sales = sales
+      top_product = product
+  return top_product, max_sales
+find_top_seller(sales_data)",90,"모범 답안과 동일한 로직이며, 문제에서 요구하는 모든 조건을 충족합니다. 다만, 함수 외부에서 `sales_data`를 정의하고 함수를 호출하는 부분은 채점 기준에 따른 감점 요인은 아니지만, 일반적으로 함수는 입력(data)을 받아 결과를 반환하는 역할에 집중하는 것이 좋습니다. 함수 외부에서 데이터를 정의하는 것은 함수의 독립성을 떨어뜨릴 수 있습니다.",2025-06-13 16:48:49
+Python기초,test,곽승예,PYTHON_4,중복 문자 제거 및 빈도수 계산,"input_string = ""abracadabra123321""
+def remove_duplicates_and_count(s):
+    frequency = {}  # 각 문자의 빈도수를 저장할 딕셔너리
+
+    for char in input_string:
+      # 각 문자의 빈도수 업데이트
+      if char in frequency.keys():
+          frequency[char] += 1
+      else:
+          frequency[char] = 1
+
+    return list(frequency.items())
+remove_duplicates_and_count(input_string)",80,"1. 함수가 외부 변수에 의존하지 않고, 입력 인자 `s`를 사용하여 독립적으로 작동하도록 수정해야 합니다.
+2. 딕셔너리 키 존재 여부 확인 시 `frequency.keys()` 호출은 불필요하므로 제거하면 가독성이 향상됩니다. `if char in frequency:` 와 같이 더 간결하게 표현할 수 있습니다.
+3. `remove_duplicates_and_count` 함수 호출 시 인자를 전달하여 함수를 테스트해야 합니다.",2025-06-13 16:48:52
+Python기초,test,곽승예,PYTHON_5,이동 거리 구하기,"player_positions = {
+    ""John Doe"": [(0, 0), (1, 1), (2, 2), (5, 5)],
+    ""Jane Smith"": [(2, 2), (3, 8), (6, 8)],
+    ""Mike Brown"": [(0, 0), (3, 4), (6, 8)]
+}
+
+def calculate_total_distances(player_positions):
+    records = []
+    for player, positions in player_positions.items():
+            total_distance = 0.0
+            for i in range(0, len(positions)-1):
+                x1, y1 = positions[i]
+                x2, y2 = positions[i+1]
+                distance = ((x2 - x1) ** 2 + (y2 - y1) ** 2) ** 0.5
+                total_distance += distance
+            records.append((player,round(total_distance,2)))
+    return records
+calculate_total_distances(player_positions)",None,"**
+
+전반적으로 훌륭한 코드입니다. 유클리드 거리 계산 로직과 결과 반환 부분에서 요구사항을 정확하게 충족했습니다. 가독성 측면에서 PEP8 스타일 가이드를 준수하고, 예외 상황에 대한 처리를 추가한다면 더욱 완벽한 코드가 될 것입니다. 예를 들어, `positions` 리스트가 비어있는 경우에 대한 처리를 추가하여 `total_distance`를 0으로 초기화하거나, 빈 리스트를 반환하는 등의 방식으로 개선할 수 있습니다.",2025-06-13 16:48:55

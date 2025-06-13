@@ -1,5 +1,5 @@
 QUESTIONS = {
-        "PYTHON_1": {
+    "PYTHON_1": {
         "title": "숫자 리스트의 평균 계산하기",
         "content": """
 - **배경**: 한 소매점에서 재고를 계산해야 합니다. 주어진 재고의 평균을 계산해보세요.
@@ -9,30 +9,15 @@ QUESTIONS = {
 - **요구 사항**
     - 함수명: `calculate_stock`
     - 해당 함수는 리스트의 전달 인자를 받음
-- **예시 코드**
-```python
-numbers = [10, 20, 30, 40, 50]
-
-def calculate_stock(numbers):
-    '''
-    여기에 코드를 작성하세요.
-    '''
-```
-- **예시 결과**
-```python
-numbers = [10, 20, 30, 40, 50]
-def calculate_stock(numbers):
-    '''
-    여기에 코드를 작성하세요.
-    '''
-calculate_stock(numbers)
-# 30.0
-```
 """,
         "model_answer": """
 def calculate_stock(numbers):
     return sum(numbers) / len(numbers)
 """,
+        "function_name": "calculate_stock",
+        "test_cases": [
+            {"input": [10, 20, 30, 40, 50], "expected": 30.0},
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "리스트의 합과 길이를 이용해 평균을 계산한다."},
             {"id": "P2", "description": "내장 함수(sum, len) 사용"}
@@ -50,20 +35,6 @@ def calculate_stock(numbers):
     - `num1`, `num2` : 숫자 입력 값
     - `operator` : 문자열 형태의 사칙 연산자 (+, -, *, /)
     - 나누려는 숫자 `num2`가 0인 경우 다음 문자를 반환: "**Cannot divide by zero**"
-- **예시 코드**
-```python
-def simple_calculator(num1, num2, operator):
-    '''
-    여기에 코드를 작성하세요.
-    '''
-```
-- **예시 결과**
-```python
-print(simple_calculator(10, 5, '+'))  # 출력: 15
-print(simple_calculator(10, 5, '-'))  # 출력: 5
-print(simple_calculator(10, 5, '*'))  # 출력: 50
-print(simple_calculator(10, 0, '/'))  # 출력: 'Cannot divide by zero'
-```
 """,
         "model_answer": """
 def simple_calculator(num1, num2, operator):
@@ -81,6 +52,13 @@ def simple_calculator(num1, num2, operator):
     else:
         return 'Invalid operator'
 """,
+        "function_name": "simple_calculator",
+        "test_cases": [
+            {"input": [10, 5, "+"], "expected": 15},
+            {"input": [10, 5, "-"], "expected": 5},
+            {"input": [10, 5, "*"], "expected": 50},
+            {"input": [10, 0, "/"], "expected": "Cannot divide by zero"}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "전달 인자(num1, num2, operator)를 올바르게 사용한다."},
             {"id": "P2", "description": "조건문(if/elif/else)으로 연산을 분기한다."},
@@ -97,21 +75,6 @@ def simple_calculator(num1, num2, operator):
 - **요구 사항**
     - 함수명: `find_top_seller`
     - 해당 함수는 딕셔너리의 전달 인자를 받음
-- **예시 코드**
-```python
-sales_data = {"apple": 50, "orange": 2, "banana" : 30}
-def find_top_seller(sales_data):
-    '''
-    여기에 코드를 작성하세요.
-    '''
-    return top_product, max_sales
-```
-- **예시 결과**
-```python
-sales_data = {"apple": 50, "orange": 2, "banana" : 30}
-find_top_seller(sales_data)
-# ('apple', 50)
-```
 """,
         "model_answer": """
 def find_top_seller(data):
@@ -123,6 +86,10 @@ def find_top_seller(data):
             top_product = product
     return top_product, max_sales
 """,
+        "function_name": "find_top_seller",
+        "test_cases": [
+            {"input": {"apple": 50, "orange": 2, "banana": 30}, "expected": ("apple", 50)},
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "딕셔너리의 key, value를 올바르게 순회한다."},
             {"id": "P2", "description": "최대값을 찾는 알고리즘 또는 내장함수(max 등)를 활용한다."},
@@ -142,22 +109,6 @@ def find_top_seller(data):
     - 주어진 문자열에서 중복된 문자를 제거
     - 각 문자가 처음 등장한 순서를 유지
     - 각 문자가 등장하는 빈도를 함께 출력하며 결과는 (문자, 빈도수) 형태의 튜플로 반환
-- **예시 코드**
-```python
-input_string = "abracadabra123321"
-def remove_duplicates_and_count(s):
-    result_with_frequency = []
-    '''
-    여기에 코드 작성
-    '''
-    return result_with_frequency # 튜플 리스트로 변환
-```
-- **예시 결과**
-```python
-input_string = "abracadabra123321"
-remove_duplicates_and_count(input_string)
-# [('a', 5), ('b', 2), ('r', 2), ('c', 1), ('d', 1), ('1', 2), ('2', 2), ('3', 2)]
-```
 """,
         "model_answer": """
 def remove_duplicates_and_count(s):
@@ -169,6 +120,10 @@ def remove_duplicates_and_count(s):
             frequency[char] = 1
     return list(frequency.items())
 """,
+        "function_name": "remove_duplicates_and_count",
+        "test_cases": [
+            {"input": "abracadabra123321", "expected": [('a', 5), ('b', 2), ('r', 2), ('c', 1), ('d', 1), ('1', 2), ('2', 2), ('3', 2)]}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "딕셔너리를 사용해 각 문자의 빈도수를 계산한다."},
             {"id": "P2", "description": "중복 문자를 제거하고, 처음 등장한 순서를 유지한다."},
@@ -190,31 +145,6 @@ def remove_duplicates_and_count(s):
           $d = \\sqrt{(x_1 - x_2)^2 + (y_1 - y_2)^2}$
     - 각 선수별로 경기 동안 이동 총 누적거리를 반환
     - (선수 이름, 누적 거리) 형태의 튜플로 리스트에 담아 반환. 누적 거리는 소수점 2째 자리까지 반올림
-- **예시 코드**
-```python
-player_positions = {
-    "John Doe": [(0, 0), (1, 1), (2, 2), (5, 5)],
-    "Jane Smith": [(2, 2), (3, 8), (6, 8)],
-    "Mike Brown": [(0, 0), (3, 4), (6, 8)]
-}
-
-def calculate_total_distances(player_positions):
-    records = []
-    '''
-    여기에 코드를 작성하세요.
-    '''
-    return records
-```
-- **예시 결과**
-```python
-player_positions = {
-    "John Doe": [(0, 0), (1, 1), (2, 2), (5, 5)],
-    "Jane Smith": [(2, 2), (3, 8), (6, 8)],
-    "Mike Brown": [(0, 0), (3, 4), (6, 8)]
-}
-calculate_total_distances(player_positions)
-# [('John Doe', 7.07), ('Jane Smith', 9.08), ('Mike Brown', 10.0)]
-```
 """,
         "model_answer": """
 def calculate_total_distances(player_positions):
@@ -229,6 +159,21 @@ def calculate_total_distances(player_positions):
         records.append((player, round(total_distance, 2)))
     return records
 """,
+        "function_name": "calculate_total_distances",
+        "test_cases": [
+            {
+                "input": {
+                    "John Doe": [(0, 0), (1, 1), (2, 2), (5, 5)],
+                    "Jane Smith": [(2, 2), (3, 8), (6, 8)],
+                    "Mike Brown": [(0, 0), (3, 4), (6, 8)]
+                },
+                "expected": [
+                    ("John Doe", 7.07),
+                    ("Jane Smith", 7.81),
+                    ("Mike Brown", 10.0)
+                ]
+            }
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "유클리드 거리 공식을 올바르게 구현한다."},
             {"id": "P2", "description": "각 선수별로 누적 이동 거리를 계산한다."},
@@ -248,18 +193,6 @@ def calculate_total_distances(player_positions):
     - 다음 Github 에 대한 데이터를 pd.read_csv를 이용하여 데이터를 불러오세요
     - Hint) url은 다음과 같습니다.
     - [`https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv`](https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv)
-- **예시 코드**
-```python
-import pandas as pd
-def get_csv(url):
-    df = pd.read_csv('여기에 코드', sep = '여기에 코드')
-    return df
-```
-- **예시 결과**
-```python
-url = 'https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv'
-get_df(url)
-```
 """,
         "model_answer": """
 import pandas as pd
@@ -267,6 +200,10 @@ def get_csv(url):
     df = pd.read_csv(filepath_or_buffer=url, sep=';')
     return df
 """,
+        "function_name": "get_csv",
+        "test_cases": [
+            {"input": "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv", "expected_shape": [10683, 11]}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "pd.read_csv로 인터넷 상의 csv 파일을 불러온다."},
             {"id": "P2", "description": "sep 인자를 올바르게 사용한다."}
@@ -281,23 +218,15 @@ def get_csv(url):
 - **요구 사항**
     - 함수명: `get_missing`
     - 컬럼별 결측치 수를 예시 결과와 같이 출력
-- **예시 코드**
-```python
-import pandas as pd
-df = get_csv(url) # 1번에서 불러온 df
-def get_missing(data):
-    return '여기에 코드'
-```
-- **예시 결과**
-```python
-get_missing(df)
-# (결측치 수가 컬럼별로 출력)
-```
 """,
         "model_answer": """
 def get_missing(df):
     return df.isnull().sum()
 """,
+        "function_name": "get_missing",
+        "test_cases": [
+            {"input": "df_sample", "expected_type": "Series"}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "DataFrame의 isnull().sum()을 활용한다."}
         ]
@@ -313,25 +242,16 @@ def get_missing(df):
     - Destination 을 인덱스로, 평균과 중앙값을 컬럼으로하는 데이터프레임 반환
     - 소수점 첫 번째 짜리까지 반올림
     - 정렬은 필수사항 아님
-- **예시 코드**
-```python
-import pandas as pd
-df = get_csv(url) # 1번에서 불러온 df
-def get_price(df):
-    result = '여기에 코드'
-    return result
-```
-- **예시 결과**
-```python
-get_price(df)
-# (Destination별 평균, 중앙값이 소수점 첫째자리까지 출력)
-```
 """,
         "model_answer": """
 def get_price(df):
     result = df.groupby('Destination')['Price'].agg(['mean', 'median']).round(1)
     return result
 """,
+        "function_name": "get_price",
+        "test_cases": [
+            {"input": "df_sample", "expected_type": "DataFrame"}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "groupby, agg, round를 활용해 집계한다."},
             {"id": "P2", "description": "Destination을 인덱스로, 평균과 중앙값을 컬럼으로 반환한다."}
@@ -352,21 +272,6 @@ def get_price(df):
     - 함수명: `get_wed_price`
     - 결과 값은 소수 값 1개가 나와야합니다.
     - 소수점 첫 번째 짜리까지 반올림
-- **예시 코드**
-```python
-import pandas as pd
-df = get_csv(url) # 1번에서 불러온 df
-def get_wed_price(df):
-    '''
-    여기에 코드
-    '''
-    return '여기에 코드'
-```
-- **예시 결과**
-```python
-get_wed_price(df)
-# (수요일 평균 가격이 소수점 첫째자리까지 출력)
-```
 """,
         "model_answer": """
 def get_wed_price(df):
@@ -375,6 +280,10 @@ def get_wed_price(df):
     wednesday_avg_price = df[df['Day_of_Week'] == 'Wednesday']['Price'].mean()
     return wednesday_avg_price.round(1)
 """,
+        "function_name": "get_wed_price",
+        "test_cases": [
+            {"input": "df_sample", "expected_type": "float"}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "날짜형 변환 및 요일 추출을 올바르게 한다."},
             {"id": "P2", "description": "수요일만 필터링하여 평균을 구한다."},
@@ -394,19 +303,6 @@ def get_wed_price(df):
     - Dep_Time 컬럼 기준 아침(5시 이상 12시 미만), 오후(12시 이상 18시 미만), 저녁(18시 이상 24시 미만), 그 외시간 밤
     - Airline 수 기준으로 내림차순 정렬 해주세요.
     - 최종 결과물은 예시 결과와 같이 `reset_index()` 를 적용해주세요.
-- **예시 코드**
-```python
-import pandas as pd
-def get_cat(df):
-    '''
-    여기에 코드
-    '''
-    return '여기에 코드'
-get_cat(df)
-```
-- **예시 결과**
-get_cat(df)
-# (아침, 오후, 저녁, 밤별 Airline 수가 내림차순으로 출력)
 """,
         "model_answer": """
 def get_cat(df):
@@ -419,6 +315,10 @@ def get_cat(df):
     )
     return df.groupby(['Time_Of_Day'])[['Airline']].count().sort_values(by='Airline', ascending= False).reset_index()
 """,
+        "function_name": "get_cat",
+        "test_cases": [
+            {"input": "df_sample", "expected_type": "DataFrame"}
+        ],
         "evaluation_criteria": [
             {"id": "P1", "description": "Dep_Time을 시간대로 분류한다."},
             {"id": "P2", "description": "Airline 수 기준 내림차순 정렬한다."},

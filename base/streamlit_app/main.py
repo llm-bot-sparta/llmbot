@@ -17,6 +17,9 @@ def get_grading_scheme(assignment_type):
     if assignment_type == "SQL":
         module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
         return getattr(module, "GRADING_SCHEME", [])
+    elif assignment_type == "python_basic":
+        module = importlib.import_module("streamlit_app.grading_schemes.grading_python_basic")
+        return getattr(module, "GRADING_SCHEME", [])
     # 추후 다른 과제 유형 추가 가능
     return []
 
@@ -43,13 +46,6 @@ def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
     
     return csv_filename
-
-def round_to_dir(round_str):
-    if round_str == '7th':
-        return '7th_sql_BankChurners'
-    else :
-        ValueError(f"지원하지 않는 회차입니다: {round_str}")
-    return round_str
 
 def load_student_data(round_str):
     """회차별 학생 데이터를 로드하는 함수"""
@@ -131,8 +127,12 @@ def main():
             answer_inputs = {}
             for qid, q in QUESTIONS[assignment_type].items():
                 st.markdown(f"---\n#### {qid}. {q['title']}")
-                st.markdown(q['content'])
-                answer_inputs[qid] = st.text_area(f"학생 답변 입력 ({qid})", key=f"answer_{qid}", height=120)
+                st.markdown(q['content'], unsafe_allow_html=True)
+                answer_inputs[qid] = st.text_area(
+                    f"학생 답변 입력 ({qid})",
+                    key=f"answer_{qid}",
+                    height=240  # 기존 120에서 2배로 증가
+                )
                 with st.expander(f"평가 기준 보기 ({qid})"):
                     st.markdown("**문제별 요구 체크리스트**")
                     for criteria in q["evaluation_criteria"]:

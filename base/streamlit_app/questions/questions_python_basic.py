@@ -1,3 +1,4 @@
+import numpy as np
 QUESTIONS = {
     "PYTHON_1": {
         "title": "숫자 리스트의 평균 계산하기",
@@ -230,7 +231,14 @@ def calculate_total_distances(player_positions):
         """,
         "function_name": "get_missing",
         "test_cases": [ {"input": "df_sample",
-           "expected": [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]}
+           "expected_type": 'Series',
+           "expected": {  
+                "Route": 1,
+                "Total_Stops": 1,
+                "Airline": 0, "Date_of_Journey": 0, "Source": 0, 
+                "Destination": 0, "Dep_Time": 0, "Arrival_Time": 0,
+                "Duration": 0, "Additional_Info": 0, "Price": 0
+            }}
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "DataFrame의 isnull().sum()을 활용한다."}
@@ -255,7 +263,26 @@ def get_price(df):
 """,
         "function_name": "get_price",
         "test_cases": [
-            {"input": "df_sample", "expected_type": "DataFrame"}
+            {"input": "df_sample", "expected_type": "DataFrame",
+            "expected": {
+                "mean": {
+                    "Banglore": 9158.4,
+                    "Cochin": 10539.4,
+                    "Delhi": 5143.9,
+                    "Hyderabad": 5059.7,
+                    "Kolkata": 4789.9,
+                    "New Delhi": 11917.7
+                },
+                "median": {
+                    "Banglore": 9345.0,
+                    "Cochin": 10262.0,
+                    "Delhi": 4823.0,
+                    "Hyderabad": 3342.0,
+                    "Kolkata": 3850.0,
+                    "New Delhi": 10898.5
+                }
+            }
+            }
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "groupby, agg, round를 활용해 집계한다."},
@@ -265,29 +292,29 @@ def get_price(df):
     "PYTHON_9": {
         "title": "수요일에 예약된 비행기 표 값 평균 구하기",
         "content": """
-- **배경:** 특정한 날짜(Ex 수요일) 에 대한 평균 예약 금액을 조회하겠습니다.
-- **문제 의도**
-    - 날짜형 자료형 이해
-    - 불리언 인덱싱 활용
-    - Hint
-        1. 기존 날짜형 자료형을 바꿀 함수 찾기
-        2. [**Series의 dt**](https://pandas.pydata.org/docs/reference/api/pandas.Series.dt.html)의 함수 알아보기
-    - 문제의 푸는 방법은 단 1개가 아니며 여러가지가 나올 수 있음
-- **요구 사항**
-    - 함수명: `get_wed_price`
-    - 결과 값은 소수 값 1개가 나와야합니다.
-    - 소수점 첫 번째 짜리까지 반올림
-""",
-        "model_answer": """
-def get_wed_price(df):
-    df['Date_of_Journey'] = pd.to_datetime(df['Date_of_Journey'], format ='%d-%m-%Y')
-    df['Day_of_Week'] = df['Date_of_Journey'].dt.day_name()
-    wednesday_avg_price = df[df['Day_of_Week'] == 'Wednesday']['Price'].mean()
-    return wednesday_avg_price.round(1)
-""",
+    - **배경:** 특정한 날짜(Ex 수요일) 에 대한 평균 예약 금액을 조회하겠습니다.
+    - **문제 의도**
+        - 날짜형 자료형 이해
+        - 불리언 인덱싱 활용
+        - Hint
+            1. 기존 날짜형 자료형을 바꿀 함수 찾기
+            2. [**Series의 dt**](https://pandas.pydata.org/docs/reference/api/pandas.Series.dt.html)의 함수 알아보기
+        - 문제의 푸는 방법은 단 1개가 아니며 여러가지가 나올 수 있음
+    - **요구 사항**
+        - 함수명: `get_wed_price`
+        - 결과 값은 소수 값 1개가 나와야합니다.
+        - 소수점 첫 번째 짜리까지 반올림
+    """,
+            "model_answer": """
+    def get_wed_price(df):
+        df['Date_of_Journey'] = pd.to_datetime(df['Date_of_Journey'], format = '%d/%m/%Y')
+        df['Day_of_Week'] = df['Date_of_Journey'].dt.day_name()
+        wednesday_avg_price = df[df['Day_of_Week'] == 'Wednesday']['Price'].mean()
+        return wednesday_avg_price.round(1)
+    """,
         "function_name": "get_wed_price",
         "test_cases": [
-            {"input": "df_sample", "expected_type": "float"}
+            {"input": "df_sample", "expected_type": "float64", 'expected' :9277.5}
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "날짜형 변환 및 요일 추출을 올바르게 한다."},
@@ -322,7 +349,13 @@ def get_cat(df):
 """,
         "function_name": "get_cat",
         "test_cases": [
-            {"input": "df_sample", "expected_type": "DataFrame"}
+            {"input": "df_sample", "expected_type": "DataFrame",
+             "expected": [
+                {"Time_Of_Day": "아침", "Airline": 4912},
+                {"Time_Of_Day": "저녁", "Airline": 2702},
+                {"Time_Of_Day": "오후", "Airline": 2604},
+                {"Time_Of_Day": "밤", "Airline": 465}
+            ]}
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "Dep_Time을 시간대로 분류한다."},

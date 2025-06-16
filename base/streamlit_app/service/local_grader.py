@@ -28,7 +28,7 @@ def execute_python_code(student_code, function_name, test_cases):
             if input_value == "df_sample":
                 try:
                     if CACHED_DF_SAMPLE is None:
-                        print("Downloading and caching df_sample from GitHub...")
+                        # print("Downloading and caching df_sample from GitHub...")
                         # GitHub에 업로드된 샘플 CSV 파일의 'Raw' URL
                         sample_url = "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv"
                         # 6번 문제와 동일한 데이터, 동일한 옵션으로 불러오기
@@ -47,71 +47,69 @@ def execute_python_code(student_code, function_name, test_cases):
 
                 if should_unpack:
                     # unpack_args가 true일 때만 인자를 풀어서 전달 
-                    print(*input_value,'unpack')
+                    # print(*input_value,'unpack')
                     result = namespace[function_name](*input_value)
                 else:
                     # 그 외의 모든 경우는 인자를 그대로 전달
-                    print(input_value,'not unpack')
+                    # print(input_value,'not unpack')
                     result = namespace[function_name](input_value)          
                 
-                passed = False
-                expected_str = ""
-                result_str = ""
+                passed = True
+                expected_parts = []
+                result_parts = []
 
-                # Case 1: 'expected' 키가 있으면 일반 값 비교
+                #Case 1: 타입 검증
+                if 'expected_type' in test_case:
+                    expected_type = test_case['expected_type']
+                    actual_type = type(result).__name__
+                    expected_parts.append(f"Type: {expected_type}")
+                    result_parts.append(f"Type: {actual_type}")
+                    if not (
+                        (expected_type == 'DataFrame' and isinstance(result, pd.DataFrame)) or
+                        (expected_type == 'Series' and isinstance(result, pd.Series)) or
+                        (expected_type.lower() == actual_type.lower())
+                    ):
+                        passed = False
+
+                # --- 2. 형태(Shape) 검증 ---
+                if 'expected_shape' in test_case:
+                    expected_shape = tuple(test_case['expected_shape'])
+                    expected_parts.append(f"Shape: {expected_shape}")
+                    if hasattr(result, 'shape') and result.shape == expected_shape:
+                        result_parts.append(f"Shape: {result.shape}")
+                    else:
+                        result_parts.append(f"Shape: {getattr(result, 'shape', 'N/A')}")
+                        passed = False
+
+                # --- 3. 값(Value) 검증 ---
                 if 'expected' in test_case:
                     expected = test_case['expected']
-                    expected_str = str(expected)
-                    result_str = str(result)
-                    passed = (result == expected)
-
-                # Case 2: 'expected' 키가 없으면 타입/형태 2단계 검증
-                else:
-                    type_check_passed = True
-                    shape_check_passed = True
+                    expected_parts.append(f"Value: {str(expected)[:50]}...") # 너무 길면 잘라서 표시
+                    result_parts.append(f"Value: {str(result)[:50]}...")
                     
-                    expected_parts = []
-                    result_parts = []
-
-                    # 1단계: 타입 검증 (expected_type이 있는 경우)
-                    if 'expected_type' in test_case:
-                        expected_type = test_case['expected_type']
-                        actual_type = type(result).__name__
-                        expected_parts.append(f"Type: {expected_type}")
-                        result_parts.append(f"Type: {actual_type}")
-
-                        if not (
-                            (expected_type == 'DataFrame' and isinstance(result, pd.DataFrame)) or
-                            (expected_type == 'Series' and isinstance(result, pd.Series)) or
-                            (expected_type == 'float' and isinstance(result, (int, float))) or
-                            (expected_type.lower() == actual_type.lower())
-                        ):
-                            type_check_passed = False
-
-                    # 2단계: 형태 검증 (expected_shape가 있고, 1단계 통과 시)
-                    if 'expected_shape' in test_case:
-                        expected_shape = tuple(test_case['expected_shape'])
-                        expected_parts.append(f"Shape: {expected_shape}")
-
-                        if isinstance(result, (pd.DataFrame, pd.Series)):
-                            actual_shape = result.shape
-                            result_parts.append(f"Shape: {actual_shape}")
-                            if actual_shape != expected_shape:
-                                shape_check_passed = False
-                        else:
-                            result_parts.append("Shape: N/A (대상이 DataFrame/Series 아님)")
-                            shape_check_passed = False
-                    
-                    # 최종 통과 여부: 모든 검증을 통과해야 함
-                    passed = type_check_passed and shape_check_passed
-                    expected_str = ", ".join(expected_parts)
-                    result_str = ", ".join(result_parts)
+                    # Series/DataFrame은 .equals()나 .to_dict()로 비교
+                    if isinstance(result, pd.Series):
+                        if not result.to_dict() == expected:
+                            passed = False
+                    elif isinstance(result, pd.DataFrame):
+                        if not result.equals(pd.DataFrame(expected)):
+                            passed = False
+                    # 일반 값 비교
+                    elif result != expected:
+                        passed = False
+            
+                # --- 최종 결과 취합 ---
+                expected_str = ", ".join(expected_parts)
+                result_str = ", ".join(result_parts)
 
                 test_results.append({
                     'test_case': i,
                     'input': str(input_value)[:100],
-                    'expected': expected_str,
-                    'result': result_str,
+                    # 'expected' 관련 정보를 상세히 전달
+                    'expected_str_header': expected_str,  # expander 제목 등에 사용할 간단한 문자열
+                    'expected_obj': test_case.get('expected'), # 원본 expected 데이터 (dict, list 등)
+                    'expected_type': test_case.get('expected_type'), # 'Series', 'DataFrame' 등 타입 정보
+                    'result_obj': result, 
                     'passed': passed
                 })
 
@@ -143,11 +141,38 @@ def display_test_results(test_results):
         test_results (list): 테스트 결과 목록
     """
     import streamlit as st
-    
-    for result in test_results:
-        status = "✅" if result['passed'] else "❌"
-        st.write(f"**테스트 케이스 {result['test_case']}**: {status}")
-        st.write(f"입력값: `{result['input']}`")
-        st.write(f"기대값: `{result['expected']}`")
-        st.write(f"실행 결과: `{result['result']}`")
-        st.write("---") 
+    for i, r in enumerate(test_results, 1):
+        status = "✅ 통과" if r['passed'] else "❌ 실패"
+        
+        # expander 제목에는 간단한 문자열 정보를 사용
+        expander_title = f"Test Case {i}: {status}"
+        
+        with st.expander(expander_title, expanded=not r['passed']):
+            st.markdown("**- 실행 정보**")
+            st.text(f"입력 (Input)")
+            st.code(r['input'], language='python')
+
+            # --- 👇 기대 결과와 학생 결과를 나란히 표시 ---
+            col1, col2 = st.columns(2)
+
+            with col1:
+                st.markdown("**- 기대 결과 (Expected)**")
+                expected_obj = r.get('expected_obj')
+                expected_type = r.get('expected_type')
+                
+                # 기대 결과(expected)의 타입에 따라 다르게 표시
+                if expected_type == 'Series' and isinstance(expected_obj, dict):
+                    st.write(pd.Series(expected_obj, name="Expected"))
+                elif expected_type == 'DataFrame' and expected_obj is not None:
+                    st.write(pd.DataFrame(expected_obj))
+                else:
+                    st.code(str(expected_obj), language='python')
+
+            with col2:
+                st.markdown("**- 학생 결과 (Result)**")
+                result_obj = r.get('result_obj')
+                
+                if isinstance(result_obj, (pd.DataFrame, pd.Series)):
+                    st.write(result_obj)
+                else:
+                    st.code(str(result_obj), language='python')

@@ -26,38 +26,39 @@ def calculate_stock(numbers):
     "PYTHON_2": {
         "title": "간단한 사칙연산 계산기 함수 만들기",
         "content": """
-- **배경**: 컴퓨터 과학 수업에서 학생들은 기본적인 프로그래밍 원리를 익히고, 실제 생활에 적용할 수 있는 간단한 프로그램을 만드는 연습을 합니다. 이를 간단한 형태로 변환하여 함수형으로 만들어 보겠습니다.
-- **문제 의도**
-    - 전달 인자의 입력에 대한 이해
-    - 조건문에 대한 이해
-- **요구 사항**
-    - 함수명: `simple_calculator`
-    - `num1`, `num2` : 숫자 입력 값
-    - `operator` : 문자열 형태의 사칙 연산자 (+, -, *, /)
-    - 나누려는 숫자 `num2`가 0인 경우 다음 문자를 반환: "**Cannot divide by zero**"
-""",
+        - **배경**: 컴퓨터 과학 수업에서 학생들은 기본적인 프로그래밍 원리를 익히고, 실제 생활에 적용할 수 있는 간단한 프로그램을 만드는 연습을 합니다. 이를 간단한 형태로 변환하여 함수형으로 만들어 보겠습니다.
+        - **문제 의도**
+            - 전달 인자의 입력에 대한 이해
+            - 조건문에 대한 이해
+        - **요구 사항**
+            - 함수명: `simple_calculator`
+            - `num1`, `num2` : 숫자 입력 값
+            - `operator` : 문자열 형태의 사칙 연산자 (+, -, *, /)
+            - 나누려는 숫자 `num2`가 0인 경우 다음 문자를 반환: "**Cannot divide by zero**"
+        """,
         "model_answer": """
-def simple_calculator(num1, num2, operator):
-    if operator == '+':
-        return num1 + num2
-    elif operator == '-':
-        return num1 - num2
-    elif operator == '*':
-        return num1 * num2
-    elif operator == '/':
-        if num2 == 0:
-            return 'Cannot divide by zero'
-        else:
-            return num1 / num2
-    else:
+        def simple_calculator(num1, num2, operator):
+            if operator == '+':
+                return num1 + num2
+            elif operator == '-':
+                return num1 - num2
+            elif operator == '*':
+                return num1 * num2
+            elif operator == '/':
+                if num2 == 0:
+                    return 'Cannot divide by zero'
+                else:
+                    return num1 / num2
+            else:
         return 'Invalid operator'
 """,
         "function_name": "simple_calculator",
+        # "unpack_args": True을 통해 전달인자를 여러개를 넣을 수 있는 로직 구현
         "test_cases": [
-            {"input": [10, 5, "+"], "expected": 15},
-            {"input": [10, 5, "-"], "expected": 5},
-            {"input": [10, 5, "*"], "expected": 50},
-            {"input": [10, 0, "/"], "expected": "Cannot divide by zero"}
+            {"input": [10, 5, "+"], "expected": 15, "unpack_args": True},
+            {"input": [10, 5, "-"], "expected": 5,  "unpack_args": True},
+            {"input": [10, 5, "*"], "expected": 50, "unpack_args": True},
+            {"input": [10, 0, "/"], "expected": "Cannot divide by zero", "unpack_args": True}
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "전달 인자(num1, num2, operator)를 올바르게 사용한다."},
@@ -68,14 +69,14 @@ def simple_calculator(num1, num2, operator):
     "PYTHON_3": {
         "title": "가장 많은 제품 찾기",
         "content": """
-- **배경**: 한 소매점에서 가장 많은 제품을 가지고 있는 상품을 찾아야 합니다. 딕셔너리 형태로 저장된 재고 현황을 전달하면 가장 많이 있는 상품과 해당 상품의 수량을 반환하세요.
-- **문제 의도**
-    - 딕셔너리 자료형의 이해
-    - 딕셔너리 자료형과 내장 함수의 조합 혹은 **최대 값 찾기** 알고리즘 구현
-- **요구 사항**
-    - 함수명: `find_top_seller`
-    - 해당 함수는 딕셔너리의 전달 인자를 받음
-""",
+    - **배경**: 한 소매점에서 가장 많은 제품을 가지고 있는 상품을 찾아야 합니다. 딕셔너리 형태로 저장된 재고 현황을 전달하면 가장 많이 있는 상품과 해당 상품의 수량을 반환하세요.
+    - **문제 의도**
+        - 딕셔너리 자료형의 이해
+        - 딕셔너리 자료형과 내장 함수의 조합 혹은 **최대 값 찾기** 알고리즘 구현
+    - **요구 사항**
+        - 함수명: `find_top_seller`
+        - 해당 함수는 딕셔너리의 전달 인자를 받음
+    """,
         "model_answer": """
 def find_top_seller(data):
     top_product = ""
@@ -169,7 +170,7 @@ def calculate_total_distances(player_positions):
                 },
                 "expected": [
                     ("John Doe", 7.07),
-                    ("Jane Smith", 7.81),
+                    ("Jane Smith", 9.08),
                     ("Mike Brown", 10.0)
                 ]
             }
@@ -184,48 +185,52 @@ def calculate_total_distances(player_positions):
     "PYTHON_6": {
         "title": "Github에 있는 데이터 불러오기",
         "content": """
-- **배경**: Pandas의 read_csv 함수는 로컬에 저장된 자료 이외에도 인터넷에 있는 자료를 바로 불러올 수 있는 기능을 지원합니다. 또한 구분자가 쉼표(,)가 아니더라도 받아올 수 있습니다.
-- **문제 의도**
-    - pandas의 read_csv 함수의 이해
-    - 'sep' 전달 인자의 이해
-- **요구 사항**
-    - 함수명: `get_csv`
-    - 다음 Github 에 대한 데이터를 pd.read_csv를 이용하여 데이터를 불러오세요
-    - Hint) url은 다음과 같습니다.
-    - [`https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv`](https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv)
-""",
+        - **배경**: Pandas의 read_csv 함수는 로컬에 저장된 자료 이외에도 인터넷에 있는 자료를 바로 불러올 수 있는 기능을 지원합니다. 또한 구분자가 쉼표(,)가 아니더라도 받아올 수 있습니다.
+        - **문제 의도**
+            - pandas의 read_csv 함수의 이해
+            - 'sep' 전달 인자의 이해
+        - **요구 사항**
+            - 함수명: `get_csv`
+            - 다음 Github 에 대한 데이터를 pd.read_csv를 이용하여 데이터를 불러오세요
+            - Hint) url은 다음과 같습니다.
+            - [`https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv`](https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv)
+        """,
         "model_answer": """
-import pandas as pd
-def get_csv(url):
-    df = pd.read_csv(filepath_or_buffer=url, sep=';')
-    return df
-""",
+        import pandas as pd
+        def get_csv(url):
+            df = pd.read_csv(filepath_or_buffer=url, sep=':')
+            return df
+        """,
         "function_name": "get_csv",
         "test_cases": [
-            {"input": "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv", "expected_shape": [10683, 11]}
+        {
+            "input": "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv",
+            "expected_type": "DataFrame",   # 1차: 타입이 DataFrame인지 검증
+            "expected_shape": [10683, 11] # 2차: 형태(shape)가 맞는지 검증
+        }
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "pd.read_csv로 인터넷 상의 csv 파일을 불러온다."},
             {"id": "P2", "description": "sep 인자를 올바르게 사용한다."}
         ]
-    },
+        },
     "PYTHON_7": {
         "title": "결측치 확인",
         "content": """
-- **배경:** 데이터를 불러 왔을 때 각 컬럼에 결측치 유무를 확인하는 것은 중요합니다. 컬럼의 결측치를 확인해보세요.
-- **문제 의도**
-    - DataFrame의 함수를 활용
-- **요구 사항**
-    - 함수명: `get_missing`
-    - 컬럼별 결측치 수를 예시 결과와 같이 출력
-""",
-        "model_answer": """
-def get_missing(df):
-    return df.isnull().sum()
-""",
+        - **배경:** 데이터를 불러 왔을 때 각 컬럼에 결측치 유무를 확인하는 것은 중요합니다. 컬럼의 결측치를 확인해보세요.
+        - **문제 의도**
+            - DataFrame의 함수를 활용
+        - **요구 사항**
+            - 함수명: `get_missing`
+            - 컬럼별 결측치 수를 예시 결과와 같이 출력
+        """,
+                "model_answer": """
+        def get_missing(df):
+            return df.isnull().sum()
+        """,
         "function_name": "get_missing",
-        "test_cases": [
-            {"input": "df_sample", "expected_type": "Series"}
+        "test_cases": [ {"input": "df_sample",
+           "expected": [0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0]}
         ],
         "evaluation_criteria": [
             {"id": "P1", "description": "DataFrame의 isnull().sum()을 활용한다."}

@@ -8,7 +8,8 @@ from service.mysql_engine import setup_database, check_query_result, mysql_engin
 from sqlalchemy import text
 
 import streamlit as st
-import re
+#import re
+import traceback  # 오류 자세히 보기위한 모듈
 from datetime import datetime
 from questions import QUESTIONS
 import importlib  # 동적 import를 위해 추가
@@ -327,14 +328,16 @@ def main():
                         
                         try:
                             # 코드 실행 및 결과 받기
-                            grading_result = execute_python_code(student_code, function_name, test_cases) if is_local else \
-                                            call_python_grader(student_code, function_name, test_cases)
+                            if is_local:
+                                grading_result = execute_python_code(student_code, function_name, test_cases)
+                            else:
+                                grading_result = call_python_grader(student_code, function_name, test_cases)
                             
                             if "error" in grading_result:
                                 st.error(grading_result["error"])
                                 grading_results[qid] = {
                                     "score": 0,
-                                    "feedback": f"실행 오류: {grading_result['error']}",
+                                    "feedback": f"실행 오류: \n {grading_result['error']}",
                                     "status": "error"
                                 }
                             else:

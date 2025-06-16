@@ -1,6 +1,9 @@
 import requests
+import os
+from dotenv import load_dotenv
 
-CLOUD_FUNCTION_URL = "https://us-central1-sparatallm.cloudfunctions.net/grade-app_python"
+load_dotenv()
+CLOUD_FUNCTION_URL = os.getenv('CLOUD_FUNCTION')
 
 def call_python_grader(code, function_name, test_cases):
     payload = {

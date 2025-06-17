@@ -3,7 +3,6 @@ import os
 import pandas as pd
 # 경로 추가 (모듈 import용)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from core.grader import grade_single_question
 from service.mysql_engine import setup_database, check_query_result, mysql_engine
 from sqlalchemy import text
 
@@ -301,7 +300,6 @@ def main():
                                     '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
                 elif assignment_type == "Python기초":
-                    from service.cloud_function_client import call_python_grader
                     from service.local_grader import execute_python_code, display_test_results
                     from core.grader import grade_single_question
                     
@@ -325,15 +323,24 @@ def main():
                                 "feedback": "답변이 입력되지 않았습니다.",
                                 "status": "empty"
                             }
+                            # results에도 추가
+                            results.append({
+                                '과제카테고리': assignment_type,
+                                '학생명': student_name,
+                                '튜터명': tutor_name,
+                                '질문번호': qid,
+                                '질문제목': q['title'],
+                                '학생답안': student_code,
+                                '점수': '0',
+                                '피드백': '답변이 입력되지 않았습니다.',
+                                '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            })
                             continue
                         
                         try:
                             # 코드 실행 및 결과 받기
-                            if is_local:
-                                grading_result = execute_python_code(student_code, function_name, test_cases)
-                            else:
-                                grading_result = call_python_grader(student_code, function_name, test_cases)
-                            
+                            grading_result = execute_python_code(student_code, function_name, test_cases)
+
                             if "error" in grading_result:
                                 st.error(grading_result["error"])
                                 grading_results[qid] = {
@@ -341,6 +348,18 @@ def main():
                                     "feedback": f"실행 오류: \n {grading_result['error']}",
                                     "status": "error"
                                 }
+                                # results에도 추가
+                                results.append({
+                                    '과제카테고리': assignment_type,
+                                    '학생명': student_name,
+                                    '튜터명': tutor_name,
+                                    '질문번호': qid,
+                                    '질문제목': q['title'],
+                                    '학생답안': student_code,
+                                    '점수': '0',
+                                    '피드백': f'실행 오류: {grading_result["error"]}',
+                                    '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                                })
                             else:
                                 # 실행 결과 표시
                                 if "output" in grading_result:

@@ -8,9 +8,8 @@ RUN apt-get update && \
     update-ca-certificates && \
     pip install --upgrade certifi
 
-# 필요한 파일 복사
-COPY requirements.txt .
-COPY base/streamlit_app ./streamlit_app
+# base 디렉토리 전체를 복사
+COPY . .
 
 # 의존성 설치
 RUN pip install -r requirements.txt

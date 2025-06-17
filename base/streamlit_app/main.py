@@ -135,6 +135,10 @@ def main():
                     height=240  # 기존 120에서 2배로 증가
                 )
                 with st.expander(f"평가 기준 보기 ({qid})"):
+                    # 정답 코드를 먼저 표시
+                    st.markdown("**정답 코드**")
+                    st.code(q["model_answer"], language="python")
+                    
                     st.markdown("**문제별 요구 체크리스트**")
                     for criteria in q["evaluation_criteria"]:
                         st.write(f"- {criteria['description']}")
@@ -143,9 +147,6 @@ def main():
                         st.markdown("**공통 채점 기준 (총 100점)**")
                         for scheme in grading_scheme:
                             st.write(f"- {scheme['name']} ({scheme['score']}점): {scheme['description']}")
-                    # 정답 코드도 함께 표시
-                    st.markdown("**정답 코드**")
-                    st.code(q["model_answer"], language="python")
             
             # 채점 버튼
             if st.button("전체 문항 채점하기"):
@@ -408,11 +409,18 @@ def main():
                     # 문제별 상세 결과 표시
                     st.markdown("---")
                     st.markdown("## 채점 결과 요약")
+                    
+                    # 결과를 데이터프레임으로 변환하여 표시
+                    results_data = []
                     for qid, result in grading_results.items():
-                        with st.expander(f"문제 {qid} ({result['score']}점)"):
-                            st.write(f"상태: {'성공' if result['status'] == 'success' else '오류'}")
-                            st.write("피드백:")
-                            st.write(result['feedback'])
+                        results_data.append({
+                            '문제 번호': qid,
+                            '점수': result['score'],
+                            '상태': '성공' if result['status'] == 'success' else '오류',
+                        })
+                    
+                    df = pd.DataFrame(results_data)
+                    st.dataframe(df, use_container_width=True)
                     
                     # 결과 저장
                     if st.button("채점 결과 저장"):

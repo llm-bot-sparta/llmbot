@@ -1,8 +1,22 @@
 FROM python:3.12-slim
 
 WORKDIR /app
-COPY . .
 
-RUN pip install --no-cache-dir -r requirements.txt
+# 인증서 설치
+RUN apt-get update && \
+    apt-get install -y ca-certificates && \
+    update-ca-certificates && \
+    pip install --upgrade certifi
 
+# 필요한 파일 복사
+COPY requirements.txt .
+COPY base/streamlit_app ./streamlit_app
+
+# 의존성 설치
+RUN pip install -r requirements.txt
+
+# 포트 설정
+EXPOSE 8080
+
+# 실행 명령
 CMD ["streamlit", "run", "streamlit_app/main.py", "--server.port=8080", "--server.address=0.0.0.0"]

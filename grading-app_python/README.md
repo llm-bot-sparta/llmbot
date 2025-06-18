@@ -1,3 +1,6 @@
+## 중요
+- exec 내장함수로 파이썬내 파이썬 코드 실행 기능이 확인 됨에 따라 cloud run function은 deprecated
+
 ## Python 과제 채점을 위한 파이썬 스크립트
 
 - cloud run function에 적재되어 필요할 때마다(ondemand)하여 구동

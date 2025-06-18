@@ -30,7 +30,7 @@ def execute_python_code(student_code, function_name, test_cases):
             return {"error": f"함수 '{function_name}'이(가) 정의되지 않았습니다."}
         
         test_results = []
-        
+        print('execute 함수 for문 전')
         for i, test_case in enumerate(test_cases, 1):
             input_value = test_case['input']
             # 문제 7 ~ 10의 경우 'df_sample' 신호를 감지하고 데이터 불러오기

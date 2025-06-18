@@ -12,6 +12,8 @@ import traceback  # 오류 자세히 보기위한 모듈
 from datetime import datetime
 from questions import QUESTIONS
 import importlib  # 동적 import를 위해 추가
+from service.local_grader import execute_python_code, display_test_results
+from core.grader import grade_single_question
 
 def get_grading_scheme(assignment_type):
     if assignment_type == "SQL":
@@ -160,7 +162,7 @@ def main():
                 
                 st.subheader("채점 결과")
                 results = []
-
+                print('과제선택 진입점')
                 if assignment_type == "SQL":
                     # SQL 과제인 경우 MySQL 엔진을 통한 채점
                     # answer_dir을 회차+과제유형 조합으로 생성
@@ -301,10 +303,10 @@ def main():
                                     '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
                 elif assignment_type == "Python기초":
-                    from service.local_grader import execute_python_code, display_test_results
-                    from core.grader import grade_single_question
+                    print('Python기초 과제 채점 시작')
                     
                     # 로컬 개발 환경인지 확인
+                    # # Streamlit이 로드되어 있고 K_SERVICE 환경 변수가 없으면 로컬 환경으로 간주
                     is_local = "streamlit" in sys.modules and not os.getenv("K_SERVICE")
                     if is_local:
                         st.info("로컬 환경에서 실행 중입니다.")
@@ -366,10 +368,7 @@ def main():
                                 # 실행 결과 표시
                                 if "output" in grading_result:
                                     st.markdown(f"### 문제 {qid} 실행 결과")
-                                    if is_local:
-                                        display_test_results(grading_result["output"])
-                                    else:
-                                        st.code(str(grading_result["output"]))
+                                    display_test_results(grading_result["output"])
                                 
                                 # LLM을 통한 피드백 생성
                                 llm_feedback = grade_single_question(
@@ -455,18 +454,18 @@ def main():
                     pass
                 
                 # 모든 결과를 하나의 CSV 파일로 저장
-                if results:
-                    csv_filename = save_feedback_to_csv(assignment_type, student_name, tutor_name, results)
-                    st.success(f"모든 평가 결과가 저장되었습니다! (파일: {csv_filename})")
+                # if results:
+                #     csv_filename = save_feedback_to_csv(assignment_type, student_name, tutor_name, results)
+                #     st.success(f"모든 평가 결과가 저장되었습니다! (파일: {csv_filename})")
                     
-                    # CSV 파일 다운로드 버튼
-                    with open(csv_filename, 'rb') as f:
-                        st.download_button(
-                            label="📥 CSV 파일 다운로드",
-                            data=f,
-                            file_name=os.path.basename(csv_filename),
-                            mime="text/csv"
-                        )
+                #     # CSV 파일 다운로드 버튼
+                #     with open(csv_filename, 'rb') as f:
+                #         st.download_button(
+                #             label="📥 CSV 파일 다운로드",
+                #             data=f,
+                #             file_name=os.path.basename(csv_filename),
+                #             mime="text/csv"
+                #         )
 
 if __name__ == "__main__":
     main()

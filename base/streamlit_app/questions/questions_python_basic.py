@@ -50,7 +50,7 @@ def calculate_stock(numbers):
                 else:
                     return num1 / num2
             else:
-        return 'Invalid operator'
+                return 'Invalid operator'
 """,
         "function_name": "simple_calculator",
         # "unpack_args": True을 통해 전달인자를 여러개를 넣을 수 있는 로직 구현

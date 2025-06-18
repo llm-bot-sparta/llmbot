@@ -1,17 +1,27 @@
-import sys
-import io
 import pandas as pd
-from contextlib import redirect_stdout
 import traceback
+import streamlit as st
 # 문제7~10번은 문제 6번에서 불러온 데이터가 정상적이라고 가정하고 채점
 # 한 번 불러온 df를 메모리에 저장하여 중복 다운로드를 방지 (캐싱)
-CACHED_DF_SAMPLE = None
+
+@st.cache_data
+def load_sample_dataframe():
+    """
+    이 함수는 처음 호출될 때 단 한 번만 실행되고 캐싱됩니다.
+    이후 호출에서는 캐시된 데이터를 반환합니다.
+    """
+    # print('데이터로드 시작')
+    import os
+    print(os.getcwd())
+    df = pd.read_csv('./data/7th/flight_data.csv', sep=';')
+    # print(df.head(3))
+    # print('데이터로드 종료')
+    return df
 
 def execute_python_code(student_code, function_name, test_cases):
     """
     학생 코드를 실행하고 2단계 검증(타입, 형태)을 포함하여 테스트합니다.
     """
-    global CACHED_DF_SAMPLE
     try:
         namespace = {'pd': pd}
         exec(student_code, namespace)
@@ -23,22 +33,18 @@ def execute_python_code(student_code, function_name, test_cases):
         
         for i, test_case in enumerate(test_cases, 1):
             input_value = test_case['input']
-            # 문제 7 ~ 10의 경우
-            # 'df_sample' 신호를 감지하고 GitHub에서 데이터 불러오기
+            # 문제 7 ~ 10의 경우 'df_sample' 신호를 감지하고 데이터 불러오기
             if input_value == "df_sample":
                 try:
-                    if CACHED_DF_SAMPLE is None:
-                        # print("Downloading and caching df_sample from GitHub...")
-                        # GitHub에 업로드된 샘플 CSV 파일의 'Raw' URL
-                        sample_url = "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv"
-                        # 6번 문제와 동일한 데이터, 동일한 옵션으로 불러오기
-                        CACHED_DF_SAMPLE = pd.read_csv(sample_url, sep=';')
-                    
-                    # 원본이 수정되지 않도록 복사본을 입력값으로 사용
-                    input_value = CACHED_DF_SAMPLE.copy()
-
+                    # load_sample_dataframe()을 호출하면,
+                    # Streamlit이 알아서 캐시된 데이터를 주거나 없으면 다운로드 후 줍니다.
+                    # print('데이터 로드 함수 콜')
+                    df = load_sample_dataframe()
+                    # print('정상적으로 수신')
+                    input_value = df.copy()
+                    # print('복제완료')
                 except Exception as e:
-                    return {"error": f"GitHub에서 샘플 데이터를 불러오는 중 오류 발생: {e}"}
+                    return {"error": f"데이터를 불러오는 중 오류 발생: {e}"}
 
             # 문제2번 calculator의 경우 3가지 전달인자를 동시에 받기때문에 unpack 옵션 추가
             try:
@@ -51,8 +57,12 @@ def execute_python_code(student_code, function_name, test_cases):
                     result = namespace[function_name](*input_value)
                 else:
                     # 그 외의 모든 경우는 인자를 그대로 전달
-                    # print(input_value,'not unpack')
-                    result = namespace[function_name](input_value)          
+                    
+                    #6번 문제의 경우, input value가 url이기 때문에 코드 실행결과를 바로 할당
+                    if function_name == 'get_csv':
+                        result = input_value
+                    else:
+                        result = namespace[function_name](input_value)          
                 
                 passed = True
                 expected_parts = []
@@ -100,7 +110,6 @@ def execute_python_code(student_code, function_name, test_cases):
             
                 # --- 최종 결과 취합 ---
                 expected_str = ", ".join(expected_parts)
-                result_str = ", ".join(result_parts)
 
                 test_results.append({
                     'test_case': i,
@@ -114,6 +123,8 @@ def execute_python_code(student_code, function_name, test_cases):
                 })
 
             except Exception as e:
+                print(f"에러 발생: {e}")
+                print(traceback.format_exc())
                 # 에러 발생 시의 정보 구성
                 expected_info_list = []
                 if 'expected' in test_case: expected_info_list.append(f"Value: {test_case['expected']}")
@@ -140,7 +151,6 @@ def display_test_results(test_results):
     Args:
         test_results (list): 테스트 결과 목록
     """
-    import streamlit as st
     for i, r in enumerate(test_results, 1):
         status = "✅ 통과" if r['passed'] else "❌ 실패"
         

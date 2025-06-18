@@ -43,7 +43,8 @@ def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     # DataFrame 생성 및 CSV 저장
     df = pd.DataFrame(results)
     df['튜터명'] = tutor_name  # 튜터 이름 컬럼 추가
-    df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
+    #잠시 주석처리
+    # df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
     
     return csv_filename
 
@@ -339,6 +340,7 @@ def main():
                         
                         try:
                             # 코드 실행 및 결과 받기
+                            print('함수 채점 기능 시작')
                             grading_result = execute_python_code(student_code, function_name, test_cases)
 
                             if "error" in grading_result:

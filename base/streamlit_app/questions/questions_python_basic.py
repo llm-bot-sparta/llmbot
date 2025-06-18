@@ -1,4 +1,3 @@
-import numpy as np
 QUESTIONS = {
     "PYTHON_1": {
         "title": "숫자 리스트의 평균 계산하기",
@@ -199,13 +198,13 @@ def calculate_total_distances(player_positions):
         "model_answer": """
         import pandas as pd
         def get_csv(url):
-            df = pd.read_csv(filepath_or_buffer=url, sep=':')
+            df = pd.read_csv(filepath_or_buffer=url, sep=';')
             return df
         """,
         "function_name": "get_csv",
         "test_cases": [
         {
-            "input": "https://raw.githubusercontent.com/llm-bot-sparta/sparta_coding/refs/heads/main/flight_data.csv",
+            "input": "df_sample",
             "expected_type": "DataFrame",   # 1차: 타입이 DataFrame인지 검증
             "expected_shape": [10683, 11] # 2차: 형태(shape)가 맞는지 검증
         }

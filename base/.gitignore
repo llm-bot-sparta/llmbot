@@ -9,3 +9,4 @@ credentials/sparatallm-77020e47659e.json
 /data/feedback
 /streamlit_app/questions/__pycache__
 /streamlit_app/grading_schemes/__pycache__
+/deploy.sh

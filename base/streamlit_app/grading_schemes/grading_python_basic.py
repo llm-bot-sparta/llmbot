@@ -8,7 +8,7 @@ GRADING_SCHEME = [
     {
         "id": "readability",
         "name": "가독성",
-        "description": "Python 문법이 명확하고 PEP 가이드라인에 맞으며, 가독성 있게 작성되었는가?",
+        "description": "Python 문법이 명확하고 가독성 있게 작성되었는가?",
         "score": 30
     },
     {

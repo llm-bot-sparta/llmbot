@@ -3,8 +3,8 @@ import importlib
 def build_grading_prompt(category, question, model_answer, student_answer, evaluation_criteria, query_status=None, error_message=None):
     grading_criteria_str = ""
     if category == "SQL":
-        # grading_schemes.grading_sql 모듈에서 GRADING_SCHEME 불러오기
-        module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
+        # core.grading_sql 모듈에서 GRADING_SCHEME 불러오기
+        module = importlib.import_module("core.grading_sql")
         grading_scheme = module.GRADING_SCHEME
         grading_criteria_str = "[채점 기준]\n"
         for item in grading_scheme:
@@ -49,8 +49,8 @@ def build_grading_prompt(category, question, model_answer, student_answer, evalu
 [피드백] 전반적으로 쿼리 구조는 명확하나, 일부 필터 조건과 효율성에서 아쉬움{error_analysis_section}
 """
     elif category == "python_basic":
-        # grading_schemes.grading_python_basic 모듈에서 GRADING_SCHEME 불러오기
-        module = importlib.import_module("streamlit_app.grading_schemes.grading_python_basic")
+        # core.grading_python_basic 모듈에서 GRADING_SCHEME 불러오기
+        module = importlib.import_module("core.grading_python_basic")
         grading_scheme = module.GRADING_SCHEME
         grading_criteria_str = "[채점 기준]\n"
         for item in grading_scheme:

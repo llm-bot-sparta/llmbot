@@ -3,24 +3,23 @@ import os
 import pandas as pd
 # 경로 추가 (모듈 import용)
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from service.mysql_engine import setup_database, check_query_result, mysql_engine
+from external_service.mysql_engine import setup_database, check_query_result, mysql_engine
 from sqlalchemy import text
 
 import streamlit as st
-#import re
 import traceback  # 오류 자세히 보기위한 모듈
 from datetime import datetime
-from questions import QUESTIONS
+from question import QUESTIONS
 import importlib  # 동적 import를 위해 추가
-from service.local_grader import execute_python_code, display_test_results
-from core.grader import grade_single_question
+from core.local_grader import execute_python_code, display_test_results
+from core.llm_grader import grade_single_question
 
 def get_grading_scheme(assignment_type):
     if assignment_type == "SQL":
-        module = importlib.import_module("streamlit_app.grading_schemes.grading_sql")
+        module = importlib.import_module("core.grading_sql")
         return getattr(module, "GRADING_SCHEME", [])
     elif assignment_type == "Python기초":
-        module = importlib.import_module("streamlit_app.grading_schemes.grading_python_basic")
+        module = importlib.import_module("core.grading_python_basic")
         return getattr(module, "GRADING_SCHEME", [])
     # 추후 다른 과제 유형 추가 가능
     return []
@@ -167,7 +166,7 @@ def main():
                     # SQL 과제인 경우 MySQL 엔진을 통한 채점
                     # answer_dir을 회차+과제유형 조합으로 생성
                     answer_dir = f"answer/{selected_round}_{assignment_type}/"
-                    print(answer_dir)
+                    # print(answer_dir)
                     
                     # 데이터베이스 초기화
                     if not setup_database(answer_dir):
@@ -303,7 +302,6 @@ def main():
                                     '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
                 elif assignment_type == "Python기초":
-                    print('Python기초 과제 채점 시작')
                     
                     # 로컬 개발 환경인지 확인
                     # # Streamlit이 로드되어 있고 K_SERVICE 환경 변수가 없으면 로컬 환경으로 간주

@@ -12,7 +12,7 @@ def load_sample_dataframe():
     """
     # print('데이터로드 시작')
     import os
-    print(os.getcwd())
+    # print(os.getcwd())
     df = pd.read_csv('./data/7th/flight_data.csv', sep=';')
     # print(df.head(3))
     # print('데이터로드 종료')
@@ -30,7 +30,7 @@ def execute_python_code(student_code, function_name, test_cases):
             return {"error": f"함수 '{function_name}'이(가) 정의되지 않았습니다."}
         
         test_results = []
-        print('execute 함수 for문 전')
+        # print('execute 함수 for문 전')
         for i, test_case in enumerate(test_cases, 1):
             input_value = test_case['input']
             # 문제 7 ~ 10의 경우 'df_sample' 신호를 감지하고 데이터 불러오기

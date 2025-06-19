@@ -1,6 +1,6 @@
 import re
 from core.prompt_builder import build_grading_prompt
-from service.llm_client import generate_content
+from external_service.llm_client import generate_content
 
 def parse_gemini_response(response: str):
     """

@@ -1,12 +1,21 @@
+#가상환경
 llm_venv/
+/llmbot
+
+#환경설정
 .env
+
+#pycache files
 core/__pycache__/
 service/__pycache__/
 streamlit_app/__pycache__
-/llmbot
+/question/__pycache__
+/core/__pycache__
 credentials/sparatallm-35af38b881af.json
 credentials/sparatallm-77020e47659e.json
+
+#피드백결과
 /data/feedback
-/streamlit_app/questions/__pycache__
-/streamlit_app/grading_schemes/__pycache__
+
+#자동배포 스크립트
 /deploy.sh

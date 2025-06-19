@@ -2,6 +2,7 @@
 llm_venv/
 /llmbot
 
+
 #환경설정
 .env
 

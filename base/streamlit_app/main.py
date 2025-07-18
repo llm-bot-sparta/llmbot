@@ -21,6 +21,9 @@ def get_grading_scheme(assignment_type):
     elif assignment_type == "Python기초":
         module = importlib.import_module("core.grading_python_basic")
         return getattr(module, "GRADING_SCHEME", [])
+    elif assignment_type == '통계&머신러닝':
+        module = importlib.import_module("core.grading_st_ml")
+        return getattr(module, "GRADING_SCHEME", [])
     # 추후 다른 과제 유형 추가 가능
     return []
 
@@ -44,8 +47,7 @@ def save_feedback_to_csv(assignment_type, student_name, tutor_name, results):
     # DataFrame 생성 및 CSV 저장
     df = pd.DataFrame(results)
     df['튜터명'] = tutor_name  # 튜터 이름 컬럼 추가
-    #잠시 주석처리
-    # df.to_csv(csv_filename, index=False, encoding='utf-8-sig')
+
     
     return csv_filename
 
@@ -87,7 +89,7 @@ def main():
         
         # 과제 선택 (SQL을 기본값으로)
         assignment_options = ["(선택)"] + list(QUESTIONS.keys())
-        sql_index = assignment_options.index('SQL') if 'SQL' in assignment_options else 1
+        sql_index = assignment_options.index('통계&머신러닝') if '통계&머신러닝' in assignment_options else 1
         assignment_type = st.selectbox("과제 선택", assignment_options, index=sql_index)
         
         # 과제가 선택된 경우에만 학생/튜터 선택 표시
@@ -301,7 +303,7 @@ def main():
                                     '피드백': f'에러 발생: {str(e)}',
                                     '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                                 })
-                elif assignment_type == "Python기초":
+                elif assignment_type in ["Python기초", "통계&머신러닝"]:
                     
                     # 로컬 개발 환경인지 확인
                     # # Streamlit이 로드되어 있고 K_SERVICE 환경 변수가 없으면 로컬 환경으로 간주
@@ -315,8 +317,8 @@ def main():
                     for qid, q in QUESTIONS[assignment_type].items():
                         student_code = answer_inputs[qid]
                         function_name = q.get("function_name")
-                        test_cases = q.get("test_cases")
-                        
+                        test_cases = q.get("test_cases", [])
+
                         if not student_code:
                             st.warning(f"문제 {qid}에 대한 답변이 입력되지 않았습니다.")
                             grading_results[qid] = {
@@ -324,7 +326,6 @@ def main():
                                 "feedback": "답변이 입력되지 않았습니다.",
                                 "status": "empty"
                             }
-                            # results에도 추가
                             results.append({
                                 '과제카테고리': assignment_type,
                                 '학생명': student_name,
@@ -337,11 +338,31 @@ def main():
                                 '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
                             })
                             continue
-                        
+
+                        if not test_cases:
+                            st.warning(f"문제 {qid}에 대한 테스트 케이스가 없습니다.")
+                            grading_results[qid] = {
+                                "score": 0,
+                                "feedback": "테스트 케이스가 없습니다.",
+                                "status": "no_testcase"
+                            }
+                            results.append({
+                                '과제카테고리': assignment_type,
+                                '학생명': student_name,
+                                '튜터명': tutor_name,
+                                '질문번호': qid,
+                                '질문제목': q['title'],
+                                '학생답안': student_code,
+                                '점수': '0',
+                                '피드백': '테스트 케이스가 없습니다.',
+                                '채점시간': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                            })
+                            continue
+
                         try:
                             # 코드 실행 및 결과 받기
                             print('함수 채점 기능 시작')
-                            grading_result = execute_python_code(student_code, function_name, test_cases)
+                            grading_result = execute_python_code(student_code, assignment_type, qid, test_cases)
 
                             if "error" in grading_result:
                                 st.error(grading_result["error"])
@@ -370,8 +391,8 @@ def main():
                                 
                                 # LLM을 통한 피드백 생성
                                 llm_feedback = grade_single_question(
-                                    category="python_basic",
-                                    question=q.get("question"),
+                                    category="st_ml",
+                                    question=q.get("content"),
                                     model_answer=q.get("model_answer"),
                                     student_answer=student_code,
                                     evaluation_criteria=q.get("evaluation_criteria"),
@@ -384,11 +405,15 @@ def main():
                                 st.write(f"**피드백**: {llm_feedback.get('feedback')}")
                                 st.markdown("---")
                                 
+                                # 실제 테스트 결과 확인
+                                test_results = grading_result.get("output", [])
+                                all_passed = all(test.get('passed', False) for test in test_results) if test_results else False
+                                
                                 # 채점 결과 저장
                                 grading_results[qid] = {
                                     "score": llm_feedback.get('score', 0),
                                     "feedback": llm_feedback.get('feedback', ''),
-                                    "status": "success"
+                                    "status": "success" if all_passed else "failed"
                                 }
                                 
                                 # 결과 저장
@@ -407,11 +432,6 @@ def main():
                         except Exception as e:
                             st.error(f"문제 {qid} 채점 중 오류 발생: {str(e)}")
                             st.exception(e)  # 전체 에러 트레이스백 표시
-                            grading_results[qid] = {
-                                "score": 0,
-                                "feedback": f"채점 중 오류 발생: {str(e)}",
-                                "status": "error"
-                            }
                             results.append({
                                 '과제카테고리': assignment_type,
                                 '학생명': student_name,
@@ -431,10 +451,18 @@ def main():
                     # 결과를 데이터프레임으로 변환하여 표시
                     results_data = []
                     for qid, result in grading_results.items():
+                        status_map = {
+                            'success': '성공',
+                            'failed': '실패',
+                            'error': '오류',
+                            'empty': '답변 없음',
+                            'no_testcase': '테스트 케이스 없음'
+                        }
+                        status = status_map.get(result['status'], '오류')
                         results_data.append({
                             '문제 번호': qid,
                             '점수': result['score'],
-                            '상태': '성공' if result['status'] == 'success' else '오류',
+                            '상태': status,
                         })
                     
                     df = pd.DataFrame(results_data)
@@ -450,20 +478,6 @@ def main():
                 else:
                     # (필요하다면 다른 과제 유형 처리)
                     pass
-                
-                # 모든 결과를 하나의 CSV 파일로 저장
-                # if results:
-                #     csv_filename = save_feedback_to_csv(assignment_type, student_name, tutor_name, results)
-                #     st.success(f"모든 평가 결과가 저장되었습니다! (파일: {csv_filename})")
-                    
-                #     # CSV 파일 다운로드 버튼
-                #     with open(csv_filename, 'rb') as f:
-                #         st.download_button(
-                #             label="📥 CSV 파일 다운로드",
-                #             data=f,
-                #             file_name=os.path.basename(csv_filename),
-                #             mime="text/csv"
-                #         )
 
 if __name__ == "__main__":
     main()

@@ -17,5 +17,8 @@ RUN pip install -r requirements.txt
 # 포트 설정
 EXPOSE 8080
 
-# 실행 명령
-CMD ["streamlit", "run", "streamlit_app/main.py", "--server.port=8080", "--server.address=0.0.0.0"]
+# 환경 변수 기본값 설정
+ENV PORT 8080
+
+# 실행 명명
+CMD ["/bin/sh", "-c", "streamlit run streamlit_app/main.py --server.port=$PORT --server.address=0.0.0.0"]

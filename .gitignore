@@ -1,1 +1,5 @@
 /base/grading_python
+/base/llm
+base/.python-version
+/base/external_service/__pycache__
+base/pyproject.toml
